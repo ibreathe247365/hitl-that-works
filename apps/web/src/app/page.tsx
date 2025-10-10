@@ -1,6 +1,6 @@
 "use client";
+import { api } from "@hitl/backend/convex/_generated/api";
 import { useQuery } from "convex/react";
-import { api } from "@hitl-that-works/backend/convex/_generated/api";
 
 const TITLE_TEXT = `
  ██████╗ ███████╗████████╗████████╗███████╗██████╗
@@ -31,7 +31,7 @@ export default function Home() {
 						<div
 							className={`h-2 w-2 rounded-full ${healthCheck === "OK" ? "bg-green-500" : healthCheck === undefined ? "bg-orange-400" : "bg-red-500"}`}
 						/>
-						<span className="text-sm text-muted-foreground">
+						<span className="text-muted-foreground text-sm">
 							{healthCheck === undefined
 								? "Checking..."
 								: healthCheck === "OK"

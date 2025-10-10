@@ -1,7 +1,7 @@
 "use client";
 
-import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react";
+import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { authClient } from "@/lib/auth-client";
 import { ThemeProvider } from "./theme-provider";
 import { Toaster } from "./ui/sonner";

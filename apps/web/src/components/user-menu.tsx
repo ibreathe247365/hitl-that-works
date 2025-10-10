@@ -1,3 +1,6 @@
+import { api } from "@hitl/backend/convex/_generated/api";
+import { useQuery } from "convex/react";
+import { useRouter } from "next/navigation";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -8,9 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "./ui/button";
-import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
-import { api } from "@hitl-that-works/backend/convex/_generated/api";
 
 export default function UserMenu() {
 	const router = useRouter();
