@@ -1,0 +1,84 @@
+---
+type: auto_attached
+pattern: "**/components/**/*"
+description: UI component development guidelines using shadcn/ui and Tailwind
+---
+
+# UI Component Guidelines
+
+## shadcn/ui Patterns
+- **Use existing components**: Leverage shadcn/ui components from `components/ui/`
+- **Extend, don't replace**: Build on top of existing components
+- **Consistent styling**: Follow the established design system
+- **Accessibility first**: All components should be accessible
+
+## Component Structure
+```typescript
+// ✅ Good: Proper component structure
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link'
+  size?: 'default' | 'sm' | 'lg' | 'icon'
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant = 'default', size = 'default', ...props }, ref) => {
+    return (
+      <button
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Button.displayName = 'Button'
+```
+
+## Styling Guidelines
+- **Use Tailwind CSS**: Prefer Tailwind classes over custom CSS
+- **CSS Variables**: Use CSS variables for theming
+- **Responsive Design**: Implement mobile-first responsive design
+- **Dark Mode**: Ensure components work in both light and dark modes
+
+## Class Management
+```typescript
+// ✅ Good: Use cn() utility for conditional classes
+import { cn } from '@/lib/utils'
+
+function MyComponent({ className, isActive, ...props }) {
+  return (
+    <div
+      className={cn(
+        'base-styles',
+        isActive && 'active-styles',
+        className
+      )}
+      {...props}
+    />
+  )
+}
+```
+
+## Component Composition
+- **Prefer composition**: Build complex UIs by composing simple components
+- **Props interface**: Always define proper TypeScript interfaces
+- **Forward refs**: Use `React.forwardRef` for components that need ref access
+- **Display names**: Set proper display names for debugging
+
+## Accessibility Requirements
+- **Semantic HTML**: Use proper HTML elements
+- **ARIA attributes**: Implement proper ARIA labels and descriptions
+- **Keyboard navigation**: Ensure all interactive elements are keyboard accessible
+- **Focus management**: Implement proper focus handling
+- **Screen reader support**: Test with screen readers
+
+## Form Components
+- **Use React Hook Form**: Integrate with `@tanstack/react-form`
+- **Validation**: Implement proper form validation
+- **Error states**: Show clear error messages
+- **Loading states**: Provide feedback during form submission
+
+## Icon Usage
+- **Lucide React**: Use Lucide React icons consistently
+- **Proper sizing**: Use appropriate icon sizes
+- **Accessibility**: Provide proper alt text or aria-labels

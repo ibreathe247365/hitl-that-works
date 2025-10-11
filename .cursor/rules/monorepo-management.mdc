@@ -1,0 +1,47 @@
+---
+type: manual
+description: Monorepo and workspace management guidelines
+---
+
+# Monorepo Management
+
+## Workspace Structure
+- **pnpm workspaces**: Use pnpm for package management
+- **Turbo**: Use Turbo for build orchestration and caching
+- **Package naming**: Use `@hitl/` prefix for internal packages
+
+## Package Dependencies
+```json
+// ✅ Good: Proper workspace dependency
+{
+  "dependencies": {
+    "@hitl/backend": "workspace:*",
+    "@hitl/types": "workspace:*"
+  }
+}
+```
+
+## Build Commands
+- `pnpm dev`: Start all development servers
+- `pnpm build`: Build all packages
+- `pnpm check`: Lint and format all code
+- `pnpm check-types`: Type check all packages
+
+## Package Development
+- **Shared Types**: Use `packages/types` for shared TypeScript types
+- **Internal Packages**: Keep packages focused and single-purpose
+- **Version Management**: Use workspace protocol for internal dependencies
+- **Build Order**: Ensure proper build dependencies in turbo.json
+
+## Development Workflow
+1. Make changes in the appropriate package
+2. Run `pnpm check` to ensure code quality
+3. Run `pnpm check-types` to verify type safety
+4. Test changes across affected packages
+5. Commit with descriptive messages
+
+## Turbo Configuration
+- Use proper task dependencies
+- Implement caching strategies
+- Configure proper build pipelines
+- Use filters for targeted builds

@@ -1,0 +1,37 @@
+---
+type: always
+description: Project overview and architecture guidelines
+---
+
+# HITL Project Overview
+
+This is a **monorepo** built with modern web technologies. Follow these architectural principles:
+
+## Project Structure
+- **Monorepo**: Uses pnpm workspaces and Turbo for build orchestration
+- **Apps**: `apps/web` (Next.js frontend)
+- **Packages**: `packages/backend` (Convex), `packages/ai` (BAML), `packages/types` (shared types)
+
+## Technology Stack
+- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
+- **Backend**: Convex (real-time database and functions)
+- **Authentication**: Better Auth with Convex integration
+- **UI**: shadcn/ui components with Radix UI primitives
+- **Styling**: Tailwind CSS with CSS variables
+- **Linting/Formatting**: Biome (replaces ESLint/Prettier)
+- **AI**: BAML for AI model management
+
+## Key Principles
+1. **Type Safety**: Use TypeScript strictly with `noUncheckedIndexedAccess`
+2. **Component Architecture**: Prefer composition over inheritance
+3. **Real-time**: Leverage Convex for reactive data
+4. **Modern React**: Use React 19 features (Server Components, etc.)
+5. **Performance**: Optimize for Core Web Vitals
+6. **Accessibility**: Follow WCAG guidelines with Radix UI primitives
+
+## Code Organization
+- Use `@/` imports for internal modules
+- Keep components small and focused
+- Prefer server components when possible
+- Use proper error boundaries
+- Implement proper loading states

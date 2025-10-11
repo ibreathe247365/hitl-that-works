@@ -1,0 +1,42 @@
+---
+type: agent_requested
+description: Code formatting and linting rules using Biome
+---
+
+# Biome Configuration Guidelines
+
+## Formatting Rules
+- **Indentation**: Use tabs (as configured in biome.json)
+- **Quotes**: Use double quotes for strings
+- **Semicolons**: Always use semicolons
+- **Trailing commas**: Use trailing commas in objects and arrays
+
+## Linting Rules
+Follow the Biome configuration in `biome.json`:
+
+### Style Rules
+- `noParameterAssign`: Don't reassign function parameters
+- `useAsConstAssertion`: Use `as const` for immutable values
+- `useDefaultParameterLast`: Put default parameters last
+- `useEnumInitializers`: Initialize enum values explicitly
+- `useSelfClosingElements`: Use self-closing JSX elements
+- `useSingleVarDeclarator`: Declare one variable per statement
+
+### Correctness Rules
+- `useExhaustiveDependencies`: Include all dependencies in useEffect
+- `noUnusedTemplateLiteral`: Don't use template literals unnecessarily
+- `useNumberNamespace`: Use number namespace for numeric values
+- `noInferrableTypes`: Don't specify types that can be inferred
+- `noUselessElse`: Remove unnecessary else statements
+
+## Code Organization
+- **Import organization**: Use Biome's organize imports feature
+- **Consistent formatting**: Run `pnpm check` before committing
+- **File structure**: Follow the established patterns
+
+## Pre-commit Checks
+Always run these commands before committing:
+```bash
+pnpm check          # Format and lint all files
+pnpm check-types    # Type check all packages
+```

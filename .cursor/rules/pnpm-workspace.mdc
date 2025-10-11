@@ -1,0 +1,78 @@
+---
+type: always
+description: pnpm workspace and package management guidelines
+---
+
+# pnpm Workspace Guidelines
+
+## Package Manager
+- **Always use pnpm**: This project uses pnpm as the package manager
+- **Workspace Protocol**: Use `workspace:*` for internal package dependencies
+- **Lock File**: Always commit `pnpm-lock.yaml` to version control
+
+## Workspace Configuration
+```json
+// pnpm-workspace.yaml
+packages:
+  - "apps/*"
+  - "packages/*"
+```
+
+## Package Dependencies
+```json
+// ✅ Good: Internal workspace dependencies
+{
+  "dependencies": {
+    "@hitl/backend": "workspace:*",
+    "@hitl/types": "workspace:*",
+    "@hitl/ai": "workspace:*"
+  }
+}
+
+// ✅ Good: External dependencies with catalog
+{
+  "dependencies": {
+    "convex": "catalog:",
+    "better-auth": "catalog:"
+  }
+}
+```
+
+## Common Commands
+- `pnpm install`: Install all dependencies
+- `pnpm add <package>`: Add dependency to current package
+- `pnpm add -w <package>`: Add dependency to workspace root
+- `pnpm add -F <filter> <package>`: Add dependency to specific package
+- `pnpm run <script>`: Run script in current package
+- `pnpm run -F <filter> <script>`: Run script in specific package
+
+## Workspace Scripts
+```json
+// Root package.json scripts
+{
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check": "biome check --write .",
+    "check-types": "turbo check-types"
+  }
+}
+```
+
+## Best Practices
+- **Use filters**: Use `-F` flag to target specific packages
+- **Catalog dependencies**: Use catalog for consistent versions across packages
+- **Workspace protocol**: Always use `workspace:*` for internal dependencies
+- **Lock file**: Never manually edit `pnpm-lock.yaml`
+- **Clean installs**: Use `pnpm install --frozen-lockfile` in CI/CD
+
+## Package Naming
+- **Internal packages**: Use `@hitl/` prefix (e.g., `@hitl/backend`, `@hitl/types`)
+- **Scoped packages**: Follow npm scoping conventions
+- **Version management**: Use semantic versioning for published packages
+
+## Development Workflow
+1. Make changes in the appropriate package
+2. Run `pnpm install` if dependencies changed
+3. Use `pnpm run -F <package> <script>` for package-specific commands
+4. Use workspace-level scripts for cross-package operations

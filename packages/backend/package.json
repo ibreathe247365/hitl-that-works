@@ -7,7 +7,7 @@
 	},
 	"author": "",
 	"license": "ISC",
-	"description": "",
+	"description": "Convex backend",
 	"devDependencies": {
 		"@types/node": "catalog:",
 		"typescript": "catalog:"

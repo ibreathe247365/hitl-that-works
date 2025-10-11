@@ -1,0 +1,63 @@
+---
+type: auto_attached
+pattern: "apps/web/**/*"
+description: Next.js and React specific guidelines for the web app
+---
+
+# Next.js Web App Guidelines
+
+## Next.js 15 Best Practices
+- **Use App Router**: All routes should be in `src/app/` directory
+- **Server Components First**: Prefer Server Components unless client-side features needed
+- **Proper Loading States**: Use `loading.tsx` files for route-level loading
+- **Error Boundaries**: Implement `error.tsx` files for error handling
+- **Metadata API**: Use proper metadata for SEO
+
+## React 19 Patterns
+```typescript
+// ✅ Good: Server Component (default)
+async function UserProfile({ userId }: { userId: string }) {
+  const user = await getUser(userId)
+  return <div>{user.name}</div>
+}
+
+// ✅ Good: Client Component when needed
+'use client'
+import { useState } from 'react'
+
+function InteractiveButton() {
+  const [count, setCount] = useState(0)
+  return <button onClick={() => setCount(c => c + 1)}>{count}</button>
+}
+```
+
+## File Organization
+```
+src/
+├── app/                 # App Router pages
+│   ├── layout.tsx      # Root layout
+│   ├── page.tsx        # Home page
+│   └── dashboard/     # Route groups
+├── components/         # Reusable components
+│   ├── ui/            # shadcn/ui components
+│   └── ...            # Custom components
+└── lib/               # Utilities and configurations
+```
+
+## Authentication Integration
+- Use Better Auth with Convex integration
+- Implement proper session handling
+- Use middleware for route protection
+- Handle auth state in Server Components when possible
+
+## Performance Optimization
+- Use `next/image` for images
+- Implement proper caching strategies
+- Use `next/dynamic` for code splitting
+- Optimize bundle size with proper imports
+
+## Styling Guidelines
+- Use Tailwind CSS with CSS variables
+- Follow shadcn/ui component patterns
+- Use `cn()` utility for conditional classes
+- Implement proper dark mode support

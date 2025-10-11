@@ -1,0 +1,127 @@
+---
+type: manual
+description: AI and BAML integration guidelines
+---
+
+# BAML (Basically, A Made-Up Language) Guidelines
+
+BAML is a domain-specific language for building LLM prompts as functions and creating agentic workflows.
+
+## Schema Definition
+```baml
+// Define output schemas using classes
+class MyObject {
+  // Optional string fields use ?
+  // @description is optional, but if you include it, it goes after the field.
+  name string? @description("The name of the object")
+  
+  // Arrays of primitives (cannot be optional)
+  tags string[]
+  
+  // Enums must be declared separately and are optional
+  status MyEnum?
+  
+  // Union types
+  type "success" | "error"
+  
+  // Primitive types
+  count int
+  enabled bool
+  score float
+
+  // Nested objects
+  nested MyObject2
+
+  // Image type
+  myImg image
+
+  // Assertions for validation
+  bar int @assert(between_0_and_10, {{ this > 0 and this < 10 }})
+  quux string
+  @@assert(length_limit, {{ this.quux|length < this.baz }})
+}
+
+// Enums are declared separately
+enum MyEnum {
+  PENDING
+  ACTIVE @description("Item is currently active")
+  COMPLETE
+}
+```
+
+## Function Definition
+```baml
+// Functions define inputs, outputs and prompts
+// Function name is always PascalCase
+function MyFunction(input: MyObject) -> string {
+  client "openai/gpt-4o"
+  prompt #"
+    Analyze the following input:
+    {{ _.role("user") }} {{ input }}
+    
+    {{ ctx.output_format }}
+  "#
+}
+```
+
+## Available LLM Clients
+- `openai/gpt-4o`
+- `openai/gpt-4o-mini`
+- `anthropic/claude-3-5-sonnet-latest` (note the "3-5")
+- `anthropic/claude-3-5-haiku-latest`
+
+## Prompt Guidelines
+1. **Always include input**: Use `{{ input }}` in the prompt
+2. **Include output format**: Always include `{{ ctx.output_format }}` so the LLM knows how to format output
+3. **Use role tags**: Use `{{ _.role("user") }}` to indicate user inputs
+4. **Don't repeat schema**: Output schema fields are included with `{{ ctx.output_format }}`
+5. **Don't specify JSON**: Don't manually specify "answer in JSON format"
+
+## Example Implementation
+```baml
+class TweetAnalysis {
+  mainTopic string @description("The primary topic or subject matter of the tweet")
+  isSpam bool @description("Whether the tweet appears to be spam")
+}
+
+function ClassifyTweets(tweets: string[]) -> TweetAnalysis[] {
+  client "openai/gpt-4o-mini"
+  prompt #"
+    Analyze each of the following tweets and classify them:
+    {{ _.role("user") }} {{ tweets }}
+
+    {{ ctx.output_format }}
+  "#
+}
+```
+
+## Usage in TypeScript
+```typescript
+import { b } from './baml_client' // Auto-generated client
+import { TweetAnalysis } from './baml_client/types'
+
+const main = async () => {
+  const analysis = await b.ClassifyTweets(["Hello world!", "Buy now!"])
+  console.log(analysis)
+  // analysis is properly typed as TweetAnalysis[]
+}
+```
+
+## Best Practices
+- **No confidence intervals**: Don't use numbers for confidence, prefer enums like "high", "medium", "low"
+- **No validation functions**: Use `@assert` for validation instead of separate LLM validation functions
+- **Dedent declarations**: Keep all declarations properly indented
+- **Type safety**: BAML generates proper TypeScript interfaces and Python Pydantic classes
+- **Error handling**: Always handle AI operation failures gracefully
+- **Security**: Never expose API keys in client-side code
+
+## File Organization
+```
+packages/ai/
+├── baml_src/
+│   ├── clients.baml      # LLM client configurations
+│   ├── generators.baml   # Code generation settings
+│   └── functions.baml   # BAML function definitions
+└── src/
+    └── baml_client/     # Auto-generated client code
+```

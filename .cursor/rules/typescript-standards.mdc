@@ -1,0 +1,72 @@
+---
+type: always
+description: TypeScript coding standards and best practices
+---
+
+# TypeScript Standards
+
+Follow these TypeScript guidelines for type safety and code quality:
+
+## Type Safety Rules
+- **Always use strict TypeScript**: `noUncheckedIndexedAccess` is enabled
+- **Prefer explicit types** over `any` or `unknown` when possible
+- **Use proper generic constraints** for reusable components
+- **Implement proper error handling** with typed error objects
+
+## Import/Export Patterns
+```typescript
+// ✅ Good: Named exports for utilities
+export { formatDate, parseDate } from './date-utils'
+
+// ✅ Good: Default export for main component
+export default function MyComponent() { ... }
+
+// ✅ Good: Type-only imports when appropriate
+import type { User } from './types'
+```
+
+## Function Signatures
+```typescript
+// ✅ Good: Explicit parameter and return types
+function createUser(data: CreateUserData): Promise<User> {
+  // Implementation
+}
+
+// ✅ Good: Use proper async/await patterns
+async function fetchUser(id: string): Promise<User | null> {
+  try {
+    const user = await api.getUser(id)
+    return user
+  } catch (error) {
+    console.error('Failed to fetch user:', error)
+    return null
+  }
+}
+```
+
+## Component Props
+```typescript
+// ✅ Good: Define proper prop interfaces
+interface ButtonProps {
+  variant?: 'primary' | 'secondary'
+  size?: 'sm' | 'md' | 'lg'
+  children: React.ReactNode
+  onClick?: () => void
+}
+
+// ✅ Good: Use React.FC sparingly, prefer function declarations
+function Button({ variant = 'primary', size = 'md', children, onClick }: ButtonProps) {
+  // Implementation
+}
+```
+
+## Error Handling
+- Use proper error types instead of generic Error
+- Implement error boundaries for React components
+- Use Result types for operations that can fail
+- Always handle async operations with try/catch
+
+## Convex Integration
+- Use proper Convex types for queries and mutations
+- Implement proper error handling for Convex operations
+- Use Convex's reactive patterns correctly
