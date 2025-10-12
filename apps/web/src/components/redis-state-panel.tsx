@@ -2,28 +2,13 @@
 
 import { ActivityIcon, ClockIcon, DatabaseIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { ThreadStateWithMetadata } from "@hitl/ai";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface RedisStatePanelProps {
 	stateId: string;
-}
-
-interface ThreadStateWithMetadata {
-	thread: {
-		events: Array<{
-			type: string;
-			data: any;
-		}>;
-		initial_email?: any;
-	};
-	metadata?: {
-		jobId?: string;
-		enqueuedAt?: string;
-		processingAttempts?: number;
-		lastProcessedAt?: string;
-	};
 }
 
 export function RedisStatePanel({ stateId }: RedisStatePanelProps) {

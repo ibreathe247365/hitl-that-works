@@ -1,5 +1,4 @@
 import {
-	addThreadEvent,
 	handleHumanResponse,
 	type QueueJobData,
 } from "@hitl/ai";
@@ -10,6 +9,7 @@ import {
 	createErrorResponse,
 	createSuccessResponse,
 	getThreadFromPayload,
+	trackWebhookEvent,
 } from "@/lib/webhook";
 
 async function handlePOST(request: NextRequest) {
@@ -55,17 +55,11 @@ async function handlePOST(request: NextRequest) {
 
 			// Add UI event to Convex - only if processing succeeded
 			if (jobData.threadStateId) {
-				addThreadEvent(
+				trackWebhookEvent(
 					jobData.threadStateId,
-					{
-						type: "webhook_processed",
-						data: {
-							payloadType: webhookPayload.type,
-							processedAt: new Date().toISOString(),
-							success: true,
-						},
-					},
-					undefined,
+					webhookPayload,
+					"webhook_processed",
+					{ success: true },
 					jobData.userId,
 				);
 			}
@@ -83,21 +77,17 @@ async function handlePOST(request: NextRequest) {
 
 			// Add error event to Convex for tracking
 			if (jobData.threadStateId) {
-				addThreadEvent(
+				trackWebhookEvent(
 					jobData.threadStateId,
+					webhookPayload,
+					"webhook_processed",
 					{
-						type: "webhook_processed",
-						data: {
-							payloadType: webhookPayload.type,
-							processedAt: new Date().toISOString(),
-							success: false,
-							error:
-								processingError instanceof Error
-									? processingError.message
-									: "Unknown error",
-						},
+						success: false,
+						error:
+							processingError instanceof Error
+								? processingError.message
+								: "Unknown error",
 					},
-					undefined,
 					jobData.userId,
 				);
 			}

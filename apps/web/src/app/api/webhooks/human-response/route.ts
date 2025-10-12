@@ -1,4 +1,4 @@
-import { addThreadEvent, enqueueWebhookProcessing } from "@hitl/ai";
+import { enqueueWebhookProcessing } from "@hitl/ai";
 import { WebhookPayloadSchema } from "@hitl/ai/schemas";
 import { api } from "@hitl/backend/convex/_generated/api";
 import { ConvexHttpClient } from "convex/browser";
@@ -6,7 +6,9 @@ import { type NextRequest, NextResponse } from "next/server";
 import {
 	createErrorResponse,
 	createSuccessResponse,
+	extractStateIdFromWebhookPayload,
 	getWebhookConfig,
+	trackWebhookEvent,
 	verifyWebhookSignature,
 } from "@/lib/webhook";
 
@@ -52,12 +54,7 @@ export async function POST(request: NextRequest) {
 		});
 
 		// Get thread state ID from payload for tracking
-		let threadStateId: string | undefined;
-		if (webhookPayload.type === "function_call.completed") {
-			threadStateId = webhookPayload.event.spec.state?.stateId;
-		} else if (webhookPayload.type === "human_contact.completed") {
-			threadStateId = webhookPayload.event.state?.stateId;
-		}
+		const threadStateId = extractStateIdFromWebhookPayload(webhookPayload);
 
 		// Look up userId from the thread if we have a stateId
 		let userId: string | undefined;
@@ -81,17 +78,11 @@ export async function POST(request: NextRequest) {
 		);
 
 		if (threadStateId) {
-			addThreadEvent(
+			trackWebhookEvent(
 				threadStateId,
-				{
-					type: "webhook_received",
-					data: {
-						payloadType: webhookPayload.type,
-						receivedAt: new Date().toISOString(),
-						jobId,
-					},
-				},
-				undefined,
+				webhookPayload,
+				"webhook_received",
+				{ jobId },
 				userId,
 			);
 		}

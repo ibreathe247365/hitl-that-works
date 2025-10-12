@@ -5,7 +5,19 @@
 		"build": {
 			"dependsOn": ["^build"],
 			"inputs": ["$TURBO_DEFAULT$", ".env*"],
-			"outputs": ["dist/**"]
+			"outputs": ["dist/**"],
+			"env": [
+				"UPSTASH_REDIS_REST_URL",
+				"UPSTASH_REDIS_REST_TOKEN",
+				"QSTASH_URL",
+				"QSTASH_TOKEN",
+				"QSTASH_CURRENT_SIGNING_KEY",
+				"QSTASH_NEXT_SIGNING_KEY",
+				"DEBUG_DISABLE_WEBHOOK_VERIFICATION",
+				"WEBHOOK_SIGNING_SECRET",
+				"GOOGLE_API_KEY",
+				"NEXT_PUBLIC_APP_URL"
+			]
 		},
 		"lint": {
 			"dependsOn": ["^lint"]

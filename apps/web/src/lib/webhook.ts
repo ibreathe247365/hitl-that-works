@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { getThreadState, type Thread } from "@hitl/ai";
+import { getThreadState, type Thread, addThreadEvent } from "@hitl/ai";
 import type { WebhookPayload } from "@hitl/ai/schemas";
 import { type NextRequest, NextResponse } from "next/server";
 import * as svix from "svix";
@@ -125,4 +125,57 @@ export const generateInternalWebhookHeaders = (
 		"svix-signature": `v1,${signature}`,
 		"Content-Type": "application/json",
 	};
+};
+
+/**
+ * Extract stateId from webhook payload
+ * @param payload The webhook payload to extract stateId from
+ * @returns The stateId if found, undefined otherwise
+ */
+export const extractStateIdFromWebhookPayload = (
+	payload: WebhookPayload,
+): string | undefined => {
+	if (payload.type === "function_call.completed") {
+		return payload.event.spec.state?.stateId;
+	} else if (payload.type === "human_contact.completed") {
+		return payload.event.state?.stateId;
+	}
+	return undefined;
+};
+
+/**
+ * Track webhook event in Convex database
+ * @param stateId The thread state ID
+ * @param payload The webhook payload
+ * @param eventType The type of event to track
+ * @param additionalData Additional data to include in the event
+ * @param userId Optional user ID
+ */
+export const trackWebhookEvent = (
+	stateId: string,
+	payload: WebhookPayload,
+	eventType: "webhook_received" | "webhook_processed",
+	additionalData: Record<string, any> = {},
+	userId?: string,
+): void => {
+	const eventData: Record<string, any> = {
+		payloadType: payload.type,
+		...additionalData,
+	};
+
+	if (eventType === "webhook_received") {
+		eventData.receivedAt = new Date().toISOString();
+	} else if (eventType === "webhook_processed") {
+		eventData.processedAt = new Date().toISOString();
+	}
+
+	addThreadEvent(
+		stateId,
+		{
+			type: eventType,
+			data: eventData,
+		},
+		undefined,
+		userId,
+	);
 };

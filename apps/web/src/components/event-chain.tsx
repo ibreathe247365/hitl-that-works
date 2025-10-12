@@ -1,6 +1,7 @@
 "use client";
 
 import { BrainIcon } from "lucide-react";
+import { type Event } from "@hitl/ai/schemas";
 import {
 	ChainOfThought,
 	ChainOfThoughtContent,
@@ -25,10 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface EventChainProps {
-	events: Array<{
-		type: string;
-		data: any;
-	}>;
+	events: Event[];
 }
 
 export function EventChain({ events }: EventChainProps) {
