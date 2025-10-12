@@ -20,27 +20,26 @@ $ pnpm add @boundaryml/baml
 
 import type { BamlRuntime, FunctionResult, BamlCtxManager, Image, Audio, Pdf, Video, ClientRegistry, Collector, FunctionLog } from "@boundaryml/baml"
 import { toBamlError, BamlAbortError, type HTTPRequest } from "@boundaryml/baml"
-import type { Checked, Check, RecursivePartialNull as MovedRecursivePartialNull } from "./types.js"
-import type * as types from "./types.js"
-import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, NothingToDo} from "./types.js"
-import type TypeBuilder from "./type_builder.js"
-import { HttpRequest, HttpStreamRequest } from "./sync_request.js"
-import { LlmResponseParser, LlmStreamParser } from "./parser.js"
-import { DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_CTX, DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME } from "./globals.js"
-import type * as events from "./events.js"
+import type { Checked, Check, RecursivePartialNull as MovedRecursivePartialNull } from "./types"
+import type * as types from "./types"
+import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, NothingToDo} from "./types"
+import type TypeBuilder from "./type_builder"
+import { HttpRequest, HttpStreamRequest } from "./sync_request"
+import { LlmResponseParser, LlmStreamParser } from "./parser"
+import { DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_CTX, DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME } from "./globals"
 
 /**
  * @deprecated Use RecursivePartialNull from 'baml_client/types' instead.
  * Example:
  * ```ts
- * import { RecursivePartialNull } from './baml_client/types.js'
+ * import { RecursivePartialNull } from './baml_client/types'
  * ```
  */
 export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>;
 
 type TickReason = "Unknown";
 
-type BamlCallOptions<EventsT = never> = {
+type BamlCallOptions = {
   tb?: TypeBuilder
   clientRegistry?: ClientRegistry
   collector?: Collector | Collector[]
@@ -48,7 +47,6 @@ type BamlCallOptions<EventsT = never> = {
   tags?: Record<string, string>
   signal?: AbortSignal
   onTick?: (reason: TickReason, log: FunctionLog | null) => void
-  events?: EventsT
 }
 
 export class BamlSyncClient {
@@ -98,21 +96,21 @@ export class BamlSyncClient {
   
   DetermineNextStep(
       thread: string,
-      __baml_options__?: BamlCallOptions<never>
+      __baml_options__?: BamlCallOptions
   ): types.ClarificationRequest | types.DoneForNow | types.IntentCalculate | types.NothingToDo | types.Await {
     try {
       const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
       const signal = options.signal;
-
+      
       if (signal?.aborted) {
         throw new BamlAbortError('Operation was aborted', signal.reason);
       }
-
+      
       // Check if onTick is provided and reject for sync operations
       if (options.onTick) {
         throw new Error("onTick is not supported for synchronous functions. Please use the async client instead.");
       }
-
+      
       const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
       const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
       const env: Record<string, string> = Object.fromEntries(
@@ -130,7 +128,6 @@ export class BamlSyncClient {
         options.tags || {},
         env,
         signal,
-        options.events,
       )
       return raw.parsed(false) as types.ClarificationRequest | types.DoneForNow | types.IntentCalculate | types.NothingToDo | types.Await
     } catch (error: any) {
@@ -140,21 +137,21 @@ export class BamlSyncClient {
   
   PerformCalculation(
       expression: string,
-      __baml_options__?: BamlCallOptions<never>
+      __baml_options__?: BamlCallOptions
   ): types.Calculation {
     try {
       const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
       const signal = options.signal;
-
+      
       if (signal?.aborted) {
         throw new BamlAbortError('Operation was aborted', signal.reason);
       }
-
+      
       // Check if onTick is provided and reject for sync operations
       if (options.onTick) {
         throw new Error("onTick is not supported for synchronous functions. Please use the async client instead.");
       }
-
+      
       const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
       const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
       const env: Record<string, string> = Object.fromEntries(
@@ -172,7 +169,6 @@ export class BamlSyncClient {
         options.tags || {},
         env,
         signal,
-        options.events,
       )
       return raw.parsed(false) as types.Calculation
     } catch (error: any) {
@@ -182,21 +178,21 @@ export class BamlSyncClient {
   
   SquashResponseContext(
       thread: string,error: string,
-      __baml_options__?: BamlCallOptions<never>
+      __baml_options__?: BamlCallOptions
   ): string {
     try {
       const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
       const signal = options.signal;
-
+      
       if (signal?.aborted) {
         throw new BamlAbortError('Operation was aborted', signal.reason);
       }
-
+      
       // Check if onTick is provided and reject for sync operations
       if (options.onTick) {
         throw new Error("onTick is not supported for synchronous functions. Please use the async client instead.");
       }
-
+      
       const collector = options.collector ? (Array.isArray(options.collector) ? options.collector : [options.collector]) : [];
       const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
       const env: Record<string, string> = Object.fromEntries(
@@ -214,7 +210,6 @@ export class BamlSyncClient {
         options.tags || {},
         env,
         signal,
-        options.events,
       )
       return raw.parsed(false) as string
     } catch (error: any) {

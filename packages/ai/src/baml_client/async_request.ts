@@ -21,20 +21,18 @@ $ pnpm add @boundaryml/baml
 import type { BamlRuntime, BamlCtxManager, ClientRegistry, Image, Audio, Pdf, Video, FunctionLog } from
 "@boundaryml/baml"
 import { toBamlError, HTTPRequest } from "@boundaryml/baml"
-import type { Checked, Check } from "./types.js"
-import type * as types from "./types.js"
-import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, NothingToDo} from "./types.js"
-import type TypeBuilder from "./type_builder.js"
-import type * as events from "./events.js"
+import type { Checked, Check } from "./types"
+import type * as types from "./types"
+import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, NothingToDo} from "./types"
+import type TypeBuilder from "./type_builder"
 
 type TickReason = "Unknown";
 
-type BamlCallOptions<EventsT = never> = {
+type BamlCallOptions = {
 tb?: TypeBuilder
 clientRegistry?: ClientRegistry
 env?: Record<string, string | undefined>
   onTick?: (reason: TickReason, log: FunctionLog | null) => void
-  events?: EventsT
   }
 
   export class AsyncHttpRequest {
@@ -43,7 +41,7 @@ env?: Record<string, string | undefined>
   
   async DetermineNextStep(
   thread: string,
-  __baml_options__?: BamlCallOptions<never>
+  __baml_options__?: BamlCallOptions
   ): Promise<HTTPRequest> {
     try {
     const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
@@ -68,7 +66,7 @@ env?: Record<string, string | undefined>
       
   async PerformCalculation(
   expression: string,
-  __baml_options__?: BamlCallOptions<never>
+  __baml_options__?: BamlCallOptions
   ): Promise<HTTPRequest> {
     try {
     const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
@@ -93,7 +91,7 @@ env?: Record<string, string | undefined>
       
   async SquashResponseContext(
   thread: string,error: string,
-  __baml_options__?: BamlCallOptions<never>
+  __baml_options__?: BamlCallOptions
   ): Promise<HTTPRequest> {
     try {
     const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
@@ -124,7 +122,7 @@ env?: Record<string, string | undefined>
       
       async DetermineNextStep(
       thread: string,
-      __baml_options__?: BamlCallOptions<never>
+      __baml_options__?: BamlCallOptions
       ): Promise<HTTPRequest> {
         try {
         const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
@@ -149,7 +147,7 @@ env?: Record<string, string | undefined>
           
       async PerformCalculation(
       expression: string,
-      __baml_options__?: BamlCallOptions<never>
+      __baml_options__?: BamlCallOptions
       ): Promise<HTTPRequest> {
         try {
         const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
@@ -174,7 +172,7 @@ env?: Record<string, string | undefined>
           
       async SquashResponseContext(
       thread: string,error: string,
-      __baml_options__?: BamlCallOptions<never>
+      __baml_options__?: BamlCallOptions
       ): Promise<HTTPRequest> {
         try {
         const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };

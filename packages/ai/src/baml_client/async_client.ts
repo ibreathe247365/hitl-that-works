@@ -21,16 +21,15 @@ $ pnpm add @boundaryml/baml
 import type { BamlRuntime, FunctionResult, BamlCtxManager, ClientRegistry, Image, Audio, Pdf, Video, FunctionLog,
 HTTPRequest } from "@boundaryml/baml"
 import { toBamlError, BamlStream, BamlAbortError, Collector } from "@boundaryml/baml"
-import type { Checked, Check, RecursivePartialNull as MovedRecursivePartialNull } from "./types.js"
-import type { partial_types } from "./partial_types.js"
-import type * as types from "./types.js"
-import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, NothingToDo} from "./types.js"
-import type TypeBuilder from "./type_builder.js"
-import { AsyncHttpRequest, AsyncHttpStreamRequest } from "./async_request.js"
-import { LlmResponseParser, LlmStreamParser } from "./parser.js"
+import type { Checked, Check, RecursivePartialNull as MovedRecursivePartialNull } from "./types"
+import type { partial_types } from "./partial_types"
+import type * as types from "./types"
+import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, NothingToDo} from "./types"
+import type TypeBuilder from "./type_builder"
+import { AsyncHttpRequest, AsyncHttpStreamRequest } from "./async_request"
+import { LlmResponseParser, LlmStreamParser } from "./parser"
 import { DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_CTX,
-DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME } from "./globals.js"
-import type * as events from "./events.js"
+DO_NOT_USE_DIRECTLY_UNLESS_YOU_KNOW_WHAT_YOURE_DOING_RUNTIME } from "./globals"
 
 /**
 * @deprecated Use RecursivePartialNull from 'baml_client/types' instead.
@@ -39,7 +38,7 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
 
     type TickReason = "Unknown";
 
-    type BamlCallOptions<EventsT = never> = {
+    type BamlCallOptions = {
     tb?: TypeBuilder
     clientRegistry?: ClientRegistry
     collector?: Collector | Collector[]
@@ -47,7 +46,6 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
       tags?: Record<string, string>
         signal?: AbortSignal
         onTick?: (reason: TickReason, log: FunctionLog | null) => void
-        events?: EventsT
         }
 
         export class BamlAsyncClient {
@@ -98,7 +96,7 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
         
         async DetermineNextStep(
         thread: string,
-        __baml_options__?: BamlCallOptions<never>
+        __baml_options__?: BamlCallOptions
         ): Promise<types.ClarificationRequest | types.DoneForNow | types.IntentCalculate | types.NothingToDo | types.Await> {
           try {
           const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
@@ -136,7 +134,6 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
             options.tags || {},
             env,
             signal,
-            options.events,
             )
             return raw.parsed(false) as types.ClarificationRequest | types.DoneForNow | types.IntentCalculate | types.NothingToDo | types.Await
             } catch (error) {
@@ -146,7 +143,7 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
             
         async PerformCalculation(
         expression: string,
-        __baml_options__?: BamlCallOptions<never>
+        __baml_options__?: BamlCallOptions
         ): Promise<types.Calculation> {
           try {
           const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
@@ -184,7 +181,6 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
             options.tags || {},
             env,
             signal,
-            options.events,
             )
             return raw.parsed(false) as types.Calculation
             } catch (error) {
@@ -194,7 +190,7 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
             
         async SquashResponseContext(
         thread: string,error: string,
-        __baml_options__?: BamlCallOptions<never>
+        __baml_options__?: BamlCallOptions
         ): Promise<string> {
           try {
           const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
@@ -232,7 +228,6 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
             options.tags || {},
             env,
             signal,
-            options.events,
             )
             return raw.parsed(false) as string
             } catch (error) {
@@ -256,7 +251,7 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
             
             DetermineNextStep(
             thread: string,
-            __baml_options__?: BamlCallOptions<never>
+            __baml_options__?: BamlCallOptions
             ): BamlStream<partial_types.ClarificationRequest | partial_types.DoneForNow | partial_types.IntentCalculate | partial_types.NothingToDo | partial_types.Await, types.ClarificationRequest | types.DoneForNow | types.IntentCalculate | types.NothingToDo | types.Await>
               {
               try {
@@ -322,7 +317,7 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
                   
             PerformCalculation(
             expression: string,
-            __baml_options__?: BamlCallOptions<never>
+            __baml_options__?: BamlCallOptions
             ): BamlStream<partial_types.Calculation, types.Calculation>
               {
               try {
@@ -388,7 +383,7 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
                   
             SquashResponseContext(
             thread: string,error: string,
-            __baml_options__?: BamlCallOptions<never>
+            __baml_options__?: BamlCallOptions
             ): BamlStream<string, string>
               {
               try {

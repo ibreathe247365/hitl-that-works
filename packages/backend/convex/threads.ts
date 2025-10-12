@@ -12,16 +12,16 @@ export const addEvent = mutation({
 	},
 	handler: async (ctx, args) => {
 		const now = Date.now();
-		
+
 		const existing = await ctx.db
 			.query("threads")
 			.withIndex("by_state_id", (q) => q.eq("stateId", args.stateId))
 			.first();
-		
+
 		if (existing) {
-			await ctx.db.patch(existing._id, { 
+			await ctx.db.patch(existing._id, {
 				updatedAt: now,
-				...(args.initialEmail && { initialEmail: args.initialEmail })
+				...(args.initialEmail && { initialEmail: args.initialEmail }),
 			});
 		} else {
 			await ctx.db.insert("threads", {
@@ -32,7 +32,7 @@ export const addEvent = mutation({
 				updatedAt: now,
 			});
 		}
-		
+
 		await ctx.db.insert("events", {
 			stateId: args.stateId,
 			type: args.type,
@@ -49,24 +49,26 @@ export const getThread = query({
 		if (!user) {
 			throw new Error("Not authenticated");
 		}
-		
+
 		const thread = await ctx.db
 			.query("threads")
-			.withIndex("by_user_state", (q) => q.eq("userId", user._id).eq("stateId", args.stateId))
+			.withIndex("by_user_state", (q) =>
+				q.eq("userId", user._id).eq("stateId", args.stateId),
+			)
 			.first();
-		
+
 		if (!thread) return null;
-		
+
 		const events = await ctx.db
 			.query("events")
 			.withIndex("by_state_created", (q) => q.eq("stateId", args.stateId))
 			.order("asc")
 			.collect();
-		
+
 		return {
 			stateId: thread.stateId,
 			initial_email: thread.initialEmail,
-			events: events.map(e => ({
+			events: events.map((e) => ({
 				type: e.type,
 				data: e.data,
 			})),
@@ -82,11 +84,23 @@ export const getThreads = query({
 		if (!user) {
 			throw new Error("Not authenticated");
 		}
-		
+
 		return await ctx.db
 			.query("threads")
 			.withIndex("by_user_id", (q) => q.eq("userId", user._id))
 			.order("desc")
 			.take(100);
+	},
+});
+
+export const getUserIdByStateId = query({
+	args: { stateId: v.string() },
+	handler: async (ctx, args) => {
+		const thread = await ctx.db
+			.query("threads")
+			.withIndex("by_state_id", (q) => q.eq("stateId", args.stateId))
+			.first();
+
+		return thread?.userId || null;
 	},
 });

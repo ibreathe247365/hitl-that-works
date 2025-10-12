@@ -20,17 +20,15 @@ $ pnpm add @boundaryml/baml
 
 import type { BamlRuntime, BamlCtxManager, ClientRegistry, Image, Audio, Pdf, Video } from "@boundaryml/baml"
 import { toBamlError, HTTPRequest } from "@boundaryml/baml"
-import type { Checked, Check } from "./types.js"
-import type * as types from "./types.js"
-import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, NothingToDo} from "./types.js"
-import type TypeBuilder from "./type_builder.js"
-import type * as events from "./events.js"
+import type { Checked, Check } from "./types"
+import type * as types from "./types"
+import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, NothingToDo} from "./types"
+import type TypeBuilder from "./type_builder"
 
-type BamlCallOptions<EventsT = never> = {
+type BamlCallOptions = {
   tb?: TypeBuilder
   clientRegistry?: ClientRegistry
   env?: Record<string, string | undefined>
-  events?: EventsT
 }
 
 export class HttpRequest {
@@ -39,7 +37,7 @@ export class HttpRequest {
   
   DetermineNextStep(
       thread: string,
-      __baml_options__?: BamlCallOptions<never>
+      __baml_options__?: BamlCallOptions
   ): HTTPRequest {
     try {
       const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
@@ -64,7 +62,7 @@ export class HttpRequest {
   
   PerformCalculation(
       expression: string,
-      __baml_options__?: BamlCallOptions<never>
+      __baml_options__?: BamlCallOptions
   ): HTTPRequest {
     try {
       const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
@@ -89,7 +87,7 @@ export class HttpRequest {
   
   SquashResponseContext(
       thread: string,error: string,
-      __baml_options__?: BamlCallOptions<never>
+      __baml_options__?: BamlCallOptions
   ): HTTPRequest {
     try {
       const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
@@ -120,7 +118,7 @@ export class HttpStreamRequest {
   
   DetermineNextStep(
       thread: string,
-      __baml_options__?: BamlCallOptions<never>
+      __baml_options__?: BamlCallOptions
   ): HTTPRequest {
     try {
       const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
@@ -145,7 +143,7 @@ export class HttpStreamRequest {
   
   PerformCalculation(
       expression: string,
-      __baml_options__?: BamlCallOptions<never>
+      __baml_options__?: BamlCallOptions
   ): HTTPRequest {
     try {
       const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
@@ -170,7 +168,7 @@ export class HttpStreamRequest {
   
   SquashResponseContext(
       thread: string,error: string,
-      __baml_options__?: BamlCallOptions<never>
+      __baml_options__?: BamlCallOptions
   ): HTTPRequest {
     try {
       const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
