@@ -1,22 +1,22 @@
 // Main contact system - unified interface for all contact channels
-import type { 
-	ContactChannel, 
-	ContactDelivery, 
-	RecipientInfo,
-	ContactResult 
-} from "./types";
+
 import { sendEmail } from "./channels/email";
 import { sendSlack } from "./channels/slack";
 import { sendWebhook } from "./channels/webhook";
-
-// Re-export all types and schemas
-export * from "./types";
-export * from "./schemas";
+import type {
+	ContactChannel,
+	ContactDelivery,
+	ContactResult,
+	RecipientInfo,
+} from "./types";
 
 // Re-export channel-specific functions
-export { sendEmail, createEmailWebhookPayload } from "./channels/email";
-export { sendSlack, createSlackWebhookPayload } from "./channels/slack";
+export { createEmailWebhookPayload, sendEmail } from "./channels/email";
+export { createSlackWebhookPayload, sendSlack } from "./channels/slack";
 export { sendWebhook } from "./channels/webhook";
+export * from "./schemas";
+// Re-export all types and schemas
+export * from "./types";
 
 /**
  * Send a message via one or more contact channels
@@ -40,13 +40,14 @@ export async function createHumanContact(
 		try {
 			if ("email" in channel) {
 				return await sendEmail(message, channel, stateId, recipientInfo);
-			} else if ("slack" in channel) {
-				return await sendSlack(message, channel, stateId, recipientInfo);
-			} else if ("webhook" in channel) {
-				return await sendWebhook(message, channel, stateId);
-			} else {
-				throw new Error(`Unknown channel type: ${JSON.stringify(channel)}`);
 			}
+			if ("slack" in channel) {
+				return await sendSlack(message, channel, stateId, recipientInfo);
+			}
+			if ("webhook" in channel) {
+				return await sendWebhook(message, channel, stateId);
+			}
+			throw new Error(`Unknown channel type: ${JSON.stringify(channel)}`);
 		} catch (error) {
 			return {
 				success: false,

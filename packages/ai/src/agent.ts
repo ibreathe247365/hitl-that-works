@@ -6,22 +6,22 @@ import {
 	type IntentCalculate,
 	type NothingToDo,
 } from "./baml_client";
+import { createHumanContact } from "./contact";
 import type {
+	EmailPayload,
 	Event,
 	FunctionCallCompleted,
 	HumanContactCompleted,
 	Thread,
 	WebhookPayload,
 } from "./schemas";
-import { createHumanContact } from "./contact";
 import { saveThreadState } from "./state";
 import {
 	evaluateExpression,
-	validateMathematicalExpression,
 	formatCalculationResult,
+	validateMathematicalExpression,
 } from "./tools/calculator";
 import { threadToPrompt } from "./utils";
-import type { EmailPayload } from "./schemas";
 
 // Define specific kwargs types for known function handlers
 type VercelDeploymentKwargs = {
@@ -69,7 +69,9 @@ const getEmailFromThread = (thread: Thread): string | null => {
 	}
 
 	// Fallback: look for email_received event in thread events
-	const emailEvent = thread.events.find(event => event.type === "email_received");
+	const emailEvent = thread.events.find(
+		(event) => event.type === "email_received",
+	);
 	if (emailEvent) {
 		const email = emailEvent.data as EmailPayload;
 		if (email.from_address) {

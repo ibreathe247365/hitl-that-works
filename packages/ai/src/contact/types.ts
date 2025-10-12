@@ -40,9 +40,9 @@ export interface WebhookContactResult extends ContactResult {
 }
 
 // Re-export channel types from schemas
-export type { 
-	EmailContactChannel, 
-	SlackContactChannel, 
+export type {
+	ContactChannel,
+	EmailContactChannel,
+	SlackContactChannel,
 	WebhookContactChannel,
-	ContactChannel 
 } from "./schemas";

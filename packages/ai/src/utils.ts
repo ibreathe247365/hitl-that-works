@@ -1,9 +1,5 @@
 import * as yaml from "js-yaml";
-import type {
-	EmailPayload,
-	Event,
-	Thread,
-} from "./schemas";
+import type { EmailPayload, Event, Thread } from "./schemas";
 
 export function stringifyToYaml(obj: any): string {
 	if (!obj) {

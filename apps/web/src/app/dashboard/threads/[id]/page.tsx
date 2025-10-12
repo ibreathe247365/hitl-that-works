@@ -67,16 +67,19 @@ export default function ThreadDetailPage() {
 
 			{/* Main Content with Resizable Panels */}
 			<div className="flex-1 overflow-hidden">
-				<Vertical 
+				<Vertical
 					defaultLayout={[15, 80, 5]}
 					top={
 						<div className="min-h-0">
-							<MessageInput stateId={stateId} onMessageSent={handleMessageSent} />
+							<MessageInput
+								stateId={stateId}
+								onMessageSent={handleMessageSent}
+							/>
 						</div>
 					}
 					middle={
 						<div className="min-h-0">
-							<Horizontal 
+							<Horizontal
 								defaultLayout={[60, 40]}
 								left={
 									<div className="min-h-0">
@@ -96,8 +99,8 @@ export default function ThreadDetailPage() {
 							<Card className="h-full">
 								<CardContent className="p-2">
 									<div className="text-center text-muted-foreground text-xs">
-										Thread created {new Date(thread.createdAt).toLocaleString()} •
-										Last updated {new Date(thread.updatedAt).toLocaleString()}
+										Thread created {new Date(thread.createdAt).toLocaleString()}{" "}
+										• Last updated {new Date(thread.updatedAt).toLocaleString()}
 									</div>
 								</CardContent>
 							</Card>

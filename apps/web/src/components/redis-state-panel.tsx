@@ -1,8 +1,8 @@
 "use client";
 
+import type { ThreadStateWithMetadata } from "@hitl/ai";
 import { ActivityIcon, ClockIcon, DatabaseIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import type { ThreadStateWithMetadata } from "@hitl/ai";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";

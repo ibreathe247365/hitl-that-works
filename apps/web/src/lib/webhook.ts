@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { getThreadState, type Thread, addThreadEvent } from "@hitl/ai";
+import { addThreadEvent, getThreadState, type Thread } from "@hitl/ai";
 import type { WebhookPayload } from "@hitl/ai/schemas";
 import { type NextRequest, NextResponse } from "next/server";
 import * as svix from "svix";
@@ -137,7 +137,8 @@ export const extractStateIdFromWebhookPayload = (
 ): string | undefined => {
 	if (payload.type === "function_call.completed") {
 		return payload.event.spec.state?.stateId;
-	} else if (payload.type === "human_contact.completed") {
+	}
+	if (payload.type === "human_contact.completed") {
 		return payload.event.state?.stateId;
 	}
 	return undefined;

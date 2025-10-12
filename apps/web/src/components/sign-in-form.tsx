@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import z from "zod";
 import { authClient } from "@/lib/auth-client";
+import { GoogleIcon } from "./icons/google-icon";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -27,8 +28,8 @@ export default function SignInForm({
 				},
 				{
 					onSuccess: () => {
-						router.push("/");
 						toast.success("Sign in successful");
+						// Let the dashboard layout handle the redirect
 					},
 					onError: (error) => {
 						toast.error(error.error.message || error.error.statusText);
@@ -43,6 +44,23 @@ export default function SignInForm({
 			}),
 		},
 	});
+
+	const handleGoogleSignIn = async () => {
+		await authClient.signIn.social(
+			{
+				provider: "google",
+			},
+			{
+				onSuccess: () => {
+					router.push("/");
+					toast.success("Sign in successful");
+				},
+				onError: (error) => {
+					toast.error(error.error.message || error.error.statusText);
+				},
+			},
+		);
+	};
 
 	return (
 		<div className="mx-auto mt-10 w-full max-w-md p-6">
@@ -114,6 +132,27 @@ export default function SignInForm({
 					)}
 				</form.Subscribe>
 			</form>
+
+			<div className="relative my-4">
+				<div className="absolute inset-0 flex items-center">
+					<span className="w-full border-t" />
+				</div>
+				<div className="relative flex justify-center text-xs uppercase">
+					<span className="bg-background px-2 text-muted-foreground">
+						Or continue with Google
+					</span>
+				</div>
+			</div>
+
+			<Button
+				type="button"
+				variant="outline"
+				className="mb-4 w-full"
+				onClick={handleGoogleSignIn}
+			>
+				<GoogleIcon className="mr-2 h-4 w-4" />
+				Sign in with Google
+			</Button>
 
 			<div className="mt-4 text-center">
 				<Button

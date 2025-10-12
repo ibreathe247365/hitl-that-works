@@ -25,7 +25,7 @@ export async function sendWebhook(
 
 		const responseData = await response.text();
 		let parsedData: any;
-		
+
 		try {
 			parsedData = JSON.parse(responseData);
 		} catch {
@@ -33,7 +33,9 @@ export async function sendWebhook(
 		}
 
 		if (!response.ok) {
-			throw new Error(`Webhook error: ${response.status} ${response.statusText}`);
+			throw new Error(
+				`Webhook error: ${response.status} ${response.statusText}`,
+			);
 		}
 
 		return {

@@ -1,7 +1,11 @@
 // Email contact channel implementation
 import { Resend } from "resend";
-import type { EmailContactChannel, EmailContactResult, RecipientInfo } from "../types";
 import type { WebhookPayload } from "../../schemas";
+import type {
+	EmailContactChannel,
+	EmailContactResult,
+	RecipientInfo,
+} from "../types";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -30,7 +34,7 @@ export async function sendEmail(
 					"In-Reply-To": channel.email.in_reply_to_message_id,
 				}),
 				...(channel.email.references_message_id && {
-					"References": channel.email.references_message_id,
+					References: channel.email.references_message_id,
 				}),
 			},
 		};

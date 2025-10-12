@@ -1,7 +1,7 @@
 "use client";
 
+import type { Event } from "@hitl/ai/schemas";
 import { BrainIcon } from "lucide-react";
-import { type Event } from "@hitl/ai/schemas";
 import {
 	ChainOfThought,
 	ChainOfThoughtContent,

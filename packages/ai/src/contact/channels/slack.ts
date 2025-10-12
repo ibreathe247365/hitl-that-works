@@ -1,7 +1,11 @@
 // Slack contact channel implementation
 import { WebClient } from "@slack/web-api";
-import type { SlackContactChannel, SlackContactResult, RecipientInfo } from "../types";
 import type { WebhookPayload } from "../../schemas";
+import type {
+	RecipientInfo,
+	SlackContactChannel,
+	SlackContactResult,
+} from "../types";
 
 const slack = new WebClient(process.env.SLACK_BOT_TOKEN);
 
@@ -52,19 +56,22 @@ export async function sendSlack(
 
 export function createSlackWebhookPayload(slackEvent: any): WebhookPayload {
 	// Extract message from Slack event
-	const message = slackEvent.event?.text || slackEvent.text || "Slack response received";
-	
+	const message =
+		slackEvent.event?.text || slackEvent.text || "Slack response received";
+
 	// Extract stateId from message metadata or thread metadata
 	let stateId: string | undefined;
-	
+
 	// Try to extract from message metadata
 	if (slackEvent.event?.metadata?.event_payload?.stateId) {
 		stateId = slackEvent.event.metadata.event_payload.stateId;
 	}
-	
+
 	// Try to extract from message text (fallback)
 	if (!stateId && slackEvent.event?.text) {
-		const threadIdMatch = slackEvent.event.text.match(/_Thread ID: ([a-zA-Z0-9_-]+)_/);
+		const threadIdMatch = slackEvent.event.text.match(
+			/_Thread ID: ([a-zA-Z0-9_-]+)_/,
+		);
 		if (threadIdMatch) {
 			stateId = threadIdMatch[1];
 		}
