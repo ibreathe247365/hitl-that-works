@@ -5,20 +5,20 @@ import { type NextRequest, NextResponse } from "next/server";
 import * as svix from "svix";
 
 // Configuration
-const webhookSecret = process.env.WEBHOOK_SIGNING_SECRET;
 const debugMode = process.env.DEBUG_DISABLE_WEBHOOK_VERIFICATION === "true";
-const webhookVerifier = webhookSecret ? new svix.Webhook(webhookSecret) : null;
+const webhookSecret = process.env.WEBHOOK_SIGNING_SECRET;
 
 // Helper functions
 export const verifyWebhookSignature = (
 	request: NextRequest,
 	body: string,
 ): boolean => {
-	if (debugMode || !webhookVerifier) return true;
+	if (debugMode || !webhookSecret) return true;
 
+	const wh = new svix.Webhook(webhookSecret);
 	try {
 		const headers = request.headers;
-		webhookVerifier.verify(body, {
+		wh.verify(body, {
 			"svix-id": headers.get("svix-id") as string,
 			"svix-timestamp": headers.get("svix-timestamp") as string,
 			"svix-signature": headers.get("svix-signature") as string,
