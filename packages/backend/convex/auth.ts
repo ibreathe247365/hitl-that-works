@@ -4,10 +4,13 @@ import { betterAuth } from "better-auth";
 import { components } from "./_generated/api";
 import type { DataModel } from "./_generated/dataModel";
 import { query } from "./_generated/server";
+import { v } from "convex/values";
 
 const siteUrl = process.env.SITE_URL!;
 
 export const authComponent = createClient<DataModel>(components.betterAuth);
+
+export { components };
 
 export const createAuth = (
 	ctx: GenericCtx<DataModel>,
@@ -38,5 +41,29 @@ export const getCurrentUser = query({
 	args: {},
 	handler: async (ctx) => {
 		return authComponent.getAuthUser(ctx);
+	},
+});
+
+export const getUserByEmail = query({
+	args: { email: v.string() },
+	handler: async (ctx, args) => {
+		const result = await ctx.runQuery(components.betterAuth.adapter.findMany, {
+			model: "user",
+			where: [
+				{
+					field: "email",
+					operator: "eq",
+					value: args.email,
+				},
+			],
+			paginationOpts: {
+				cursor: null,
+				numItems: 1,
+			},
+		});
+
+		// Handle paginated response format
+		const users = result.page || result;
+		return Array.isArray(users) && users.length > 0 ? users[0] : null;
 	},
 });

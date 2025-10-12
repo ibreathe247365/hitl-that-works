@@ -1,7 +1,8 @@
 "use client";
 
 import type { Event } from "@hitl/ai/schemas";
-import { BrainIcon } from "lucide-react";
+import { BrainIcon, ClockIcon } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import {
 	ChainOfThought,
 	ChainOfThoughtContent,
@@ -33,15 +34,26 @@ export function EventChain({ events }: EventChainProps) {
 	if (events.length === 0) {
 		return (
 			<Card className="h-full">
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
-						<BrainIcon className="h-5 w-5" />
+				<CardHeader className="pb-4">
+					<CardTitle className="flex items-center gap-2 text-lg">
+						<BrainIcon className="h-5 w-5 text-primary" />
 						Event Chain
 					</CardTitle>
 				</CardHeader>
-				<CardContent>
-					<div className="py-8 text-center text-muted-foreground">
-						No events yet. Send a message to start the conversation.
+				<CardContent className="flex-1 flex items-center justify-center">
+					<div className="py-12 text-center max-w-sm mx-auto">
+						<div className="mx-auto mb-6 h-16 w-16 rounded-full bg-muted flex items-center justify-center">
+							<BrainIcon className="h-8 w-8 text-muted-foreground" />
+						</div>
+						<h3 className="font-semibold text-lg mb-2">No events yet</h3>
+						<p className="text-muted-foreground mb-4">
+							Send a message to start the conversation and see AI processing events here.
+						</p>
+						<div className="rounded-lg bg-muted/50 p-4 border border-dashed">
+							<p className="text-muted-foreground text-sm">
+								Events will appear here as the AI processes your requests and performs actions.
+							</p>
+						</div>
 					</div>
 				</CardContent>
 			</Card>
@@ -50,14 +62,14 @@ export function EventChain({ events }: EventChainProps) {
 
 	return (
 		<Card className="h-full">
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2">
-					<BrainIcon className="h-5 w-5" />
+			<CardHeader className="pb-4">
+				<CardTitle className="flex items-center gap-2 text-lg">
+					<BrainIcon className="h-5 w-5 text-primary" />
 					Event Chain
 				</CardTitle>
 			</CardHeader>
-			<CardContent className="p-0">
-				<ScrollArea className="h-[calc(100vh-200px)] p-4">
+			<CardContent className="p-0 flex-1 min-h-0">
+				<ScrollArea className="h-full px-6 pb-6">
 					<ChainOfThought defaultOpen={true}>
 						<ChainOfThoughtHeader>AI Processing Chain</ChainOfThoughtHeader>
 						<ChainOfThoughtContent>
@@ -71,10 +83,18 @@ export function EventChain({ events }: EventChainProps) {
 												description="User input received"
 												status="complete"
 											>
-												<div className="rounded-md bg-muted p-3">
-													<p className="text-sm">
-														{event.data.message || event.data.text}
-													</p>
+												<div className="space-y-3">
+													<div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30">
+														<p className="text-sm leading-relaxed">
+															{event.data.message || event.data.text}
+														</p>
+													</div>
+													{event.data.timestamp && (
+														<div className="text-muted-foreground text-xs flex items-center gap-1">
+															<ClockIcon className="h-3 w-3" />
+															{formatDistanceToNow(new Date(event.data.timestamp), { addSuffix: true })}
+														</div>
+													)}
 												</div>
 											</ChainOfThoughtStep>
 										);
@@ -109,10 +129,18 @@ export function EventChain({ events }: EventChainProps) {
 												description="Assistant response generated"
 												status="complete"
 											>
-												<div className="rounded-md bg-muted p-3">
-													<p className="text-sm">
-														{event.data.message || event.data.text}
-													</p>
+												<div className="space-y-3">
+													<div className="rounded-lg bg-green-50 p-4 dark:bg-green-950/20 border border-green-200 dark:border-green-800/30">
+														<p className="text-sm leading-relaxed">
+															{event.data.message || event.data.text}
+														</p>
+													</div>
+													{event.data.timestamp && (
+														<div className="text-muted-foreground text-xs flex items-center gap-1">
+															<ClockIcon className="h-3 w-3" />
+															{formatDistanceToNow(new Date(event.data.timestamp), { addSuffix: true })}
+														</div>
+													)}
 												</div>
 											</ChainOfThoughtStep>
 										);
@@ -125,9 +153,14 @@ export function EventChain({ events }: EventChainProps) {
 												description={`${event.data.payloadType} event processed`}
 												status="complete"
 											>
-												<Badge variant="secondary" className="text-xs">
-													{event.data.payloadType}
-												</Badge>
+												<div className="flex items-center gap-2">
+													<Badge variant="secondary" className="text-xs">
+														{event.data.payloadType}
+													</Badge>
+													<span className="text-muted-foreground text-xs">
+														{formatDistanceToNow(new Date(event.data.timestamp || Date.now()), { addSuffix: true })}
+													</span>
+												</div>
 											</ChainOfThoughtStep>
 										);
 
@@ -148,7 +181,7 @@ export function EventChain({ events }: EventChainProps) {
 												</TaskTrigger>
 												<TaskContent>
 													<TaskItem>
-														<pre className="overflow-x-auto rounded bg-muted p-2 text-xs">
+														<pre className="overflow-x-auto rounded-lg bg-muted p-3 text-xs border">
 															{JSON.stringify(event.data, null, 2)}
 														</pre>
 													</TaskItem>

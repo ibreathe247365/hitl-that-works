@@ -11,19 +11,31 @@ import {
 	trackWebhookEvent,
 	verifyWebhookSignature,
 } from "@/lib/webhook";
+import { logger, extractRequestContext, measureExecutionTime } from "@/lib/logger";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function POST(request: NextRequest) {
+	const requestContext = logger.logRequestStart(request);
+	const startTime = Date.now();
+
 	try {
-		console.log("Human response webhook received:", {
-			method: request.method,
-			url: request.url,
-		});
+		logger.info("Human response webhook received", requestContext);
 
 		// Get and verify webhook signature
-		const rawBody = await request.text();
+		const rawBody = await measureExecutionTime(
+			() => request.text(),
+			requestContext,
+			"Read request body"
+		);
+		
+		logger.debug("Request body read", {
+			...requestContext,
+			bodySize: rawBody.length,
+		});
+
 		if (!verifyWebhookSignature(request, rawBody)) {
+			logger.warn("Invalid webhook signature", requestContext);
 			return createErrorResponse(
 				"Invalid webhook signature",
 				"signature_verification_failed",
@@ -32,11 +44,19 @@ export async function POST(request: NextRequest) {
 		}
 
 		// Parse and validate payload
-		const body = JSON.parse(rawBody);
+		const body = await measureExecutionTime(
+			() => JSON.parse(rawBody),
+			requestContext,
+			"Parse JSON payload"
+		);
+		
 		const validationResult = WebhookPayloadSchema.safeParse(body);
 
 		if (!validationResult.success) {
-			console.error("Validation failed:", validationResult.error);
+			logger.error("Validation failed", {
+				...requestContext,
+				validationErrors: validationResult.error.issues,
+			});
 			return createErrorResponse(
 				"Invalid request data - must be a valid webhook payload",
 				"validation_error",
@@ -49,33 +69,60 @@ export async function POST(request: NextRequest) {
 		}
 
 		const webhookPayload = validationResult.data;
-		console.log("Enqueuing webhook payload for processing:", {
+		logger.info("Webhook payload validated", {
+			...requestContext,
+			payloadType: webhookPayload.type,
+		});
+
+		logger.info("Enqueuing webhook payload for processing", {
+			...requestContext,
 			type: webhookPayload.type,
 		});
 
 		// Get thread state ID from payload for tracking
 		const threadStateId = extractStateIdFromWebhookPayload(webhookPayload);
+		logger.debug("Extracted state ID from payload", {
+			...requestContext,
+			threadStateId,
+		});
 
 		// Look up userId from the thread if we have a stateId
 		let userId: string | undefined;
 		if (threadStateId) {
 			try {
-				const foundUserId = await convex.query(api.threads.getUserIdByStateId, {
-					stateId: threadStateId,
-				});
+				const foundUserId = await measureExecutionTime(
+					() => convex.query(api.threads.getUserIdByStateId, {
+						stateId: threadStateId,
+					}),
+					requestContext,
+					"Look up user ID by state ID"
+				);
 				userId = foundUserId || undefined;
-				console.log("Found userId for thread:", { threadStateId, userId });
+				logger.info("Found userId for thread", { 
+					...requestContext,
+					threadStateId, 
+					userId 
+				});
 			} catch (error) {
-				console.error("Failed to get userId for thread:", error);
+				logger.error("Failed to get userId for thread", {
+					...requestContext,
+					threadStateId,
+				}, error instanceof Error ? error : new Error(String(error)));
 				// Continue without userId - it's optional
 			}
 		}
 
-		const jobId = await enqueueWebhookProcessing(
-			webhookPayload,
-			threadStateId,
-			userId,
+		const jobId = await measureExecutionTime(
+			() => enqueueWebhookProcessing(
+				webhookPayload,
+				threadStateId,
+				userId,
+			),
+			requestContext,
+			"Enqueue webhook processing"
 		);
+
+		logger.logQueueOperation(requestContext, "enqueue", jobId, "webhook-processing");
 
 		if (threadStateId) {
 			trackWebhookEvent(
@@ -85,7 +132,12 @@ export async function POST(request: NextRequest) {
 				{ jobId },
 				userId,
 			);
+			
+			logger.logWebhookEvent(requestContext, "webhook_received", webhookPayload.type, threadStateId);
 		}
+
+		const duration = Date.now() - startTime;
+		logger.logRequestEnd(requestContext, 202, duration);
 
 		return createSuccessResponse(
 			"Webhook payload enqueued for processing",
@@ -97,7 +149,13 @@ export async function POST(request: NextRequest) {
 			202,
 		);
 	} catch (error) {
-		console.error("Human response webhook error:", error);
+		const duration = Date.now() - startTime;
+		logger.error("Human response webhook error", {
+			...requestContext,
+			duration: `${duration}ms`,
+		}, error instanceof Error ? error : new Error(String(error)));
+
+		logger.logRequestEnd(requestContext, 500, duration);
 
 		if (error instanceof Error) {
 			if (error.message.includes("QStash")) {

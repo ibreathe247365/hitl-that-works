@@ -6,10 +6,45 @@ import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect } from "react";
 
 export default function ThreadListPage() {
 	const threads = useQuery(api.threads.getThreads);
 	const router = useRouter();
+
+	const user = useQuery(api.auth.getCurrentUser);
+
+	useEffect(() => {
+		const handlePendingMessage = async () => {
+			const pendingMessage = sessionStorage.getItem("pendingMessage");
+			if (pendingMessage && user?.email) {
+				try {
+					const response = await fetch("/api/thread/send-message", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							message: pendingMessage,
+							email: user.email,
+						}),
+					});
+
+					if (response.ok) {
+						const result = await response.json();
+						sessionStorage.removeItem("pendingMessage");
+
+						router.push(`/dashboard/threads/${result.stateId}`);
+					}
+				} catch (error) {
+					console.error("Error sending pending message:", error);
+					sessionStorage.removeItem("pendingMessage");
+				}
+			}
+		};
+
+		handlePendingMessage();
+	}, [router, user]);
 
 	if (threads === undefined) {
 		return (
@@ -30,57 +65,55 @@ export default function ThreadListPage() {
 	}
 
 	return (
-		<div className="p-6">
-			<div className="mb-6">
-				<h1 className="font-bold text-2xl">Your Threads</h1>
-				<p className="text-muted-foreground">
-					{threads.length} thread{threads.length !== 1 ? "s" : ""}
-				</p>
-			</div>
+		<div className="min-h-screen bg-background">
+			<div className="container mx-auto px-6 py-8">
+				<div className="mb-8">
+					<h1 className="font-bold text-3xl mb-2">Your Threads</h1>
+					<p className="text-muted-foreground text-lg">
+						{threads.length} thread{threads.length !== 1 ? "s" : ""} total
+					</p>
+				</div>
 
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-				{threads.map((thread) => (
-					<Card
-						key={thread.stateId}
-						className="cursor-pointer transition-shadow hover:shadow-md"
-						onClick={() => router.push(`/dashboard/threads/${thread.stateId}`)}
-					>
-						<CardHeader className="pb-3">
-							<div className="flex items-center justify-between">
-								<CardTitle className="truncate font-medium text-sm">
-									Thread {thread.stateId.slice(-8)}
-								</CardTitle>
-								<Badge variant="secondary" className="text-xs">
-									{thread.initialEmail ? "Email" : "Chat"}
-								</Badge>
-							</div>
-						</CardHeader>
-						<CardContent className="pt-0">
-							<div className="space-y-2 text-muted-foreground text-sm">
-								<div>
-									Created{" "}
-									{formatDistanceToNow(new Date(thread.createdAt), {
-										addSuffix: true,
-									})}
+				<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+					{threads.map((thread) => (
+						<Card
+							key={thread.stateId}
+							className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] group"
+							onClick={() => router.push(`/dashboard/threads/${thread.stateId}`)}
+						>
+							<CardHeader className="pb-3">
+								<div className="flex items-center justify-between">
+									<CardTitle className="truncate font-semibold text-base group-hover:text-primary transition-colors">
+										Thread {thread.stateId.slice(-8)}
+									</CardTitle>
+									<Badge variant="secondary" className="text-xs flex-shrink-0">
+										{thread.initialEmail ? "Email" : "Chat"}
+									</Badge>
 								</div>
-								<div>
-									Updated{" "}
-									{formatDistanceToNow(new Date(thread.updatedAt), {
-										addSuffix: true,
-									})}
-								</div>
-								{thread.initialEmail && (
-									<div className="truncate">
-										From:{" "}
-										{typeof thread.initialEmail === "string"
-											? thread.initialEmail
-											: "Email thread"}
+							</CardHeader>
+							<CardContent className="pt-0">
+								<div className="space-y-3 text-muted-foreground text-sm">
+									<div className="flex items-center gap-2">
+										<div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+										<span>Created {formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true })}</span>
 									</div>
-								)}
-							</div>
-						</CardContent>
-					</Card>
-				))}
+									<div className="flex items-center gap-2">
+										<div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
+										<span>Updated {formatDistanceToNow(new Date(thread.updatedAt), { addSuffix: true })}</span>
+									</div>
+									{thread.initialEmail && (
+										<div className="truncate text-xs">
+											<span className="font-medium">From:</span>{" "}
+											{typeof thread.initialEmail === "string"
+												? thread.initialEmail
+												: "Email thread"}
+										</div>
+									)}
+								</div>
+							</CardContent>
+						</Card>
+					))}
+				</div>
 			</div>
 		</div>
 	);

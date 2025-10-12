@@ -11,23 +11,49 @@ const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function POST(request: NextRequest) {
 	try {
+		// Parse request body
 		const body = await request.json();
-		const { stateId, message, userId } = body;
+		const { stateId, message, email } = body;
 
-		if (!message || !userId) {
+		// Validate required fields
+		if (!message) {
 			return createErrorResponse(
-				"Message and userId are required",
+				"Message is required",
 				"validation_error",
 				400,
-				{ required: ["message", "userId"] },
+				{ required: ["message"] },
 			);
 		}
 
+		if (!email) {
+			return createErrorResponse(
+				"Email is required",
+				"validation_error",
+				400,
+				{ required: ["email"] },
+			);
+		}
+
+		// Look up user by email
+		const user = await convex.query(api.auth.getUserByEmail, { email });
+		
+		if (!user) {
+			return createErrorResponse(
+				"User not found with the provided email",
+				"user_not_found",
+				404,
+				{ email },
+			);
+		}
+
+		const userId = user._id;
+
+		// Generate or use existing state ID
 		const finalStateId =
 			stateId ||
 			`thread_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
-		// Create thread entry in database immediately if it's a new thread
+		// Create thread if it's new
 		if (!stateId) {
 			try {
 				await convex.mutation(api.threads.addEvent, {
@@ -36,13 +62,12 @@ export async function POST(request: NextRequest) {
 					data: { message: "Thread created", userId },
 					userId: userId,
 				});
-				console.log("Created new thread in database:", finalStateId);
 			} catch (error) {
-				console.error("Failed to create thread in database:", error);
 				// Continue anyway - the thread will be created later by addThreadEvent
 			}
 		}
 
+		// Prepare webhook payload
 		const webhookPayload = {
 			type: "human_contact.completed" as const,
 			event: {
@@ -58,24 +83,26 @@ export async function POST(request: NextRequest) {
 		const payloadBody = JSON.stringify(webhookPayload);
 		const headers = generateInternalWebhookHeaders(payloadBody);
 
-		const webhookResponse = await fetch("/api/webhooks/human-response", {
+		// Send webhook
+		const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/api/webhooks/human-response`;
+		const webhookResponse = await fetch(webhookUrl, {
 			method: "POST",
 			headers,
 			body: payloadBody,
 		});
 
 		if (!webhookResponse.ok) {
-			throw new Error(`Webhook failed: ${webhookResponse.statusText}`);
+			const errorMessage = `Webhook failed: ${webhookResponse.statusText}`;
+			throw new Error(errorMessage);
 		}
 
 		return createSuccessResponse("Message sent successfully", {
 			stateId: finalStateId,
 		});
 	} catch (error) {
-		console.error("Error sending message:", error);
 		return createErrorResponse(
 			"Failed to send message",
-			error instanceof Error ? error.message : "Unknown error",
+			error instanceof Error ? JSON.stringify(error.cause) : "Unknown error",
 			500,
 		);
 	}

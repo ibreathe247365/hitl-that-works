@@ -36,11 +36,12 @@ export function MessageInput({ stateId, onMessageSent }: MessageInputProps) {
 				body: JSON.stringify({
 					stateId,
 					message: message.text,
-					userId: user._id,
+					email: user.email, // Provide email for authenticated users
 				}),
 			});
 
 			if (!response.ok) {
+				console.log(response);
 				throw new Error("Failed to send message");
 			}
 
@@ -54,18 +55,28 @@ export function MessageInput({ stateId, onMessageSent }: MessageInputProps) {
 	};
 
 	return (
-		<div className="border-b p-4">
-			<PromptInput onSubmit={handleSubmit}>
-				<PromptInputBody>
-					<PromptInputTextarea placeholder="Type your message..." />
-				</PromptInputBody>
-				<PromptInputToolbar>
-					<PromptInputSubmit
-						status={isSubmitting ? "submitted" : undefined}
-						disabled={isSubmitting}
-					/>
-				</PromptInputToolbar>
-			</PromptInput>
+		<div className="px-6 py-4">
+			<div className="mx-auto max-w-4xl">
+				<div className="mb-3 flex items-center gap-2">
+					<div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+					<span className="text-muted-foreground text-sm font-medium">Ready to chat</span>
+				</div>
+				<PromptInput onSubmit={handleSubmit}>
+					<PromptInputBody>
+						<PromptInputTextarea 
+							placeholder="Type your message... (Press Enter to send, Shift+Enter for new line)" 
+							className="min-h-[60px] resize-none border-0 bg-transparent focus:ring-0 focus:outline-none text-base"
+						/>
+					</PromptInputBody>
+					<PromptInputToolbar>
+						<PromptInputSubmit
+							status={isSubmitting ? "submitted" : undefined}
+							disabled={isSubmitting}
+							className="h-8 w-8"
+						/>
+					</PromptInputToolbar>
+				</PromptInput>
+			</div>
 		</div>
 	);
 }

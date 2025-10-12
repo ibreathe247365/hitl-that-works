@@ -8,17 +8,38 @@ import {
 	getThreadFromPayload,
 	trackWebhookEvent,
 } from "@/lib/webhook";
+import { logger, extractRequestContext, measureExecutionTime } from "@/lib/logger";
 
 async function handlePOST(request: NextRequest) {
+	const requestContext = logger.logRequestStart(request);
+	const startTime = Date.now();
+
 	try {
-		console.log("Processing queued webhook job:", {
+		logger.info("Processing queued webhook job", {
+			...requestContext,
 			method: request.method,
 			url: request.url,
 		});
 
 		// Verify the request comes from QStash
-		const body = await request.text();
-		const jobData: QueueJobData = JSON.parse(body);
+		const body = await measureExecutionTime(
+			() => request.text(),
+			requestContext,
+			"Read request body"
+		);
+		
+		const jobData: QueueJobData = await measureExecutionTime(
+			() => JSON.parse(body),
+			requestContext,
+			"Parse job data"
+		);
+
+		logger.debug("Job data parsed", {
+			...requestContext,
+			hasWebhookPayload: !!jobData.webhookPayload,
+			threadStateId: jobData.threadStateId,
+			userId: jobData.userId,
+		});
 
 		// Validate the webhook payload
 		const validationResult = WebhookPayloadSchema.safeParse(
@@ -26,10 +47,10 @@ async function handlePOST(request: NextRequest) {
 		);
 
 		if (!validationResult.success) {
-			console.error(
-				"Invalid webhook payload in queue job:",
-				validationResult.error,
-			);
+			logger.error("Invalid webhook payload in queue job", {
+				...requestContext,
+				validationErrors: validationResult.error.issues,
+			});
 			return createErrorResponse(
 				"Invalid webhook payload",
 				"validation_error",
@@ -39,16 +60,30 @@ async function handlePOST(request: NextRequest) {
 		}
 
 		const webhookPayload = validationResult.data;
-		console.log("Processing queued webhook payload:", {
+		logger.info("Processing queued webhook payload", {
+			...requestContext,
 			type: webhookPayload.type,
 			threadStateId: jobData.threadStateId,
 		});
 
 		// Get thread from payload using the existing utility
-		const thread = await getThreadFromPayload(webhookPayload);
+		const thread = await measureExecutionTime(
+			() => getThreadFromPayload(webhookPayload),
+			requestContext,
+			"Get thread from payload"
+		);
+
+		logger.debug("Thread retrieved from payload", {
+			...requestContext,
+			eventCount: thread.events.length,
+		});
 
 		try {
-			await handleHumanResponse(thread, webhookPayload);
+			await measureExecutionTime(
+				() => handleHumanResponse(thread, webhookPayload, jobData.threadStateId),
+				requestContext,
+				"Handle human response"
+			);
 
 			// Add UI event to Convex - only if processing succeeded
 			if (jobData.threadStateId) {
@@ -59,18 +94,27 @@ async function handlePOST(request: NextRequest) {
 					{ success: true },
 					jobData.userId,
 				);
+				
+				logger.logWebhookEvent(requestContext, "webhook_processed", webhookPayload.type, jobData.threadStateId);
 			}
 
-			console.log("Successfully processed queued webhook job:", {
+			logger.info("Successfully processed queued webhook job", {
+				...requestContext,
 				payloadType: webhookPayload.type,
 				threadStateId: jobData.threadStateId,
 			});
+
+			const duration = Date.now() - startTime;
+			logger.logRequestEnd(requestContext, 200, duration);
 
 			return createSuccessResponse("Webhook job processed successfully", {
 				payloadType: webhookPayload.type,
 			});
 		} catch (processingError) {
-			console.error("Failed to process webhook payload:", processingError);
+			logger.error("Failed to process webhook payload", {
+				...requestContext,
+				threadStateId: jobData.threadStateId,
+			}, processingError instanceof Error ? processingError : new Error(String(processingError)));
 
 			// Add error event to Convex for tracking
 			if (jobData.threadStateId) {
@@ -93,7 +137,13 @@ async function handlePOST(request: NextRequest) {
 			throw processingError;
 		}
 	} catch (error) {
-		console.error("Error processing queued webhook job:", error);
+		const duration = Date.now() - startTime;
+		logger.error("Error processing queued webhook job", {
+			...requestContext,
+			duration: `${duration}ms`,
+		}, error instanceof Error ? error : new Error(String(error)));
+
+		logger.logRequestEnd(requestContext, 500, duration);
 
 		// Return error response that QStash can retry
 		return createErrorResponse(

@@ -37,7 +37,7 @@ export async function enqueueWebhookProcessing(
 	};
 
 	const response = await qstash.publishJSON({
-		url: `${process.env.NEXT_PUBLIC_APP_URL}/api/internal/process-webhook`,
+		url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/internal/process-webhook`,
 		body: jobData,
 		headers: {
 			"Content-Type": "application/json",

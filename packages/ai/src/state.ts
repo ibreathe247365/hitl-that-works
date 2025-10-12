@@ -1,5 +1,7 @@
 import { Redis } from "@upstash/redis";
+import { z } from "zod";
 import type { Thread } from "./schemas";
+import { ThreadSchema } from "./schemas";
 import { syncLatestEventToConvex } from "./sync";
 
 const redis = new Redis({
@@ -7,22 +9,31 @@ const redis = new Redis({
 	token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-export interface ThreadStateWithMetadata {
-	thread: Thread;
-	metadata?: {
-		jobId?: string;
-		enqueuedAt?: string;
-		processingAttempts?: number;
-		lastProcessedAt?: string;
-	};
-}
+// Zod schema for metadata
+const ThreadMetadataSchema = z.object({
+	jobId: z.string().optional(),
+	enqueuedAt: z.string().optional(),
+	processingAttempts: z.number().optional(),
+	lastProcessedAt: z.string().optional(),
+});
+
+// Zod schema for the complete Redis data structure
+const ThreadStateWithMetadataSchema = z.object({
+	thread: ThreadSchema,
+	metadata: ThreadMetadataSchema.optional(),
+});
+
+// Export inferred types
+export type ThreadMetadata = z.infer<typeof ThreadMetadataSchema>;
+export type ThreadStateWithMetadata = z.infer<typeof ThreadStateWithMetadataSchema>;
 
 export async function saveThreadState(
 	thread: Thread,
 	metadata?: ThreadStateWithMetadata["metadata"],
 	userId?: string,
+	existingStateId?: string,
 ): Promise<string> {
-	const stateId = `thread_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+	const stateId = existingStateId || `thread_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
 	const stateWithMetadata: ThreadStateWithMetadata = {
 		thread,
@@ -43,8 +54,8 @@ export async function getThreadState(stateId: string): Promise<Thread | null> {
 	if (!state) return null;
 
 	try {
-		const parsed: ThreadStateWithMetadata = JSON.parse(state);
-		return parsed.thread;
+		const validated = ThreadStateWithMetadataSchema.parse(state);
+		return validated.thread;
 	} catch (error) {
 		console.error(`Failed to parse thread state ${stateId}:`, error);
 		return null;
@@ -56,9 +67,10 @@ export async function getThreadStateWithMetadata(
 ): Promise<ThreadStateWithMetadata | null> {
 	const state = await redis.get<string>(stateId);
 	if (!state) return null;
+	console.log("state", JSON.stringify(state, null, 2));
 
 	try {
-		return JSON.parse(state) as ThreadStateWithMetadata;
+		return ThreadStateWithMetadataSchema.parse(state);
 	} catch (error) {
 		console.error(
 			`Failed to parse thread state with metadata ${stateId}:`,

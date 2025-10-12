@@ -130,15 +130,16 @@ const _handleNextStep = async (
 		| IntentCalculate
 		| NothingToDo
 		| Await,
+	stateId?: string,
 ): Promise<Thread | false> => {
 	thread.events.push({
 		type: nextStep.intent,
 		data: nextStep,
 	});
-	let stateId: string | null = null;
+	let currentStateId: string | null = null;
 	switch (nextStep.intent) {
 		case "done_for_now": {
-			stateId = await saveThreadState(thread);
+			currentStateId = await saveThreadState(thread, undefined, undefined, stateId);
 
 			// Get email address from thread
 			const emailAddress = getEmailFromThread(thread);
@@ -160,7 +161,7 @@ const _handleNextStep = async (
 						subject: "AI Agent Task Completed",
 					},
 				},
-				stateId,
+				currentStateId,
 			);
 
 			// Add contact delivery result to thread events
@@ -174,7 +175,7 @@ const _handleNextStep = async (
 		}
 
 		case "request_more_information": {
-			stateId = await saveThreadState(thread);
+			currentStateId = await saveThreadState(thread, undefined, undefined, stateId);
 
 			// Get email address from thread
 			const emailAddress = getEmailFromThread(thread);
@@ -196,7 +197,7 @@ const _handleNextStep = async (
 						subject: "AI Agent Needs Clarification",
 					},
 				},
-				stateId,
+				currentStateId,
 			);
 
 			// Add contact delivery result to thread events
@@ -210,7 +211,7 @@ const _handleNextStep = async (
 		}
 
 		case "nothing_to_do":
-			stateId = await saveThreadState(thread);
+			currentStateId = await saveThreadState(thread, undefined, undefined, stateId);
 
 			return false;
 
@@ -266,7 +267,10 @@ const _handleNextStep = async (
 	}
 };
 
-export const handleNextStep = async (thread: Thread): Promise<void> => {
+export const handleNextStep = async (
+	thread: Thread,
+	stateId?: string,
+): Promise<void> => {
 	console.log(`thread: ${JSON.stringify(thread)}`);
 
 	let nextThread: Thread | false = thread;
@@ -279,7 +283,7 @@ export const handleNextStep = async (thread: Thread): Promise<void> => {
 		console.log(nextStep);
 		console.log("===============");
 
-		nextThread = await _handleNextStep(thread, nextStep);
+		nextThread = await _handleNextStep(thread, nextStep, stateId);
 		if (!nextThread) {
 			break;
 		}
@@ -290,18 +294,20 @@ export const handleNextStep = async (thread: Thread): Promise<void> => {
 const handleHumanContactCompleted = async (
 	thread: Thread,
 	payload: HumanContactCompleted,
+	stateId?: string,
 ): Promise<void> => {
 	thread.events.push({
 		type: "human_response",
 		data: payload.event.status?.response || "No response provided",
 	});
 
-	return await handleNextStep(thread);
+	return await handleNextStep(thread, stateId);
 };
 
 const handleFunctionCallCompleted = async (
 	thread: Thread,
 	payload: FunctionCallCompleted,
+	stateId?: string,
 ): Promise<void> => {
 	// Handle rejection
 	if (!payload.event.status?.approved) {
@@ -311,13 +317,13 @@ const handleFunctionCallCompleted = async (
 				payload.event.status?.comment || "(No comment provided)"
 			}`,
 		});
-		return await handleNextStep(thread);
+		return await handleNextStep(thread, stateId);
 	}
 
 	const handler = functionHandlers[payload.event.spec.fn];
 	if (handler) {
 		const updatedThread = await handler(thread, payload.event.spec.kwargs);
-		return await handleNextStep(updatedThread);
+		return await handleNextStep(updatedThread, stateId);
 	}
 
 	// Unknown function
@@ -325,23 +331,26 @@ const handleFunctionCallCompleted = async (
 		type: "error",
 		data: `Unknown intent: ${payload.event.spec.fn}`,
 	});
-	return await handleNextStep(thread);
+	return await handleNextStep(thread, stateId);
 };
 
 export const handleHumanResponse = async (
 	thread: Thread,
 	payload: WebhookPayload,
+	stateId?: string,
 ): Promise<void> => {
 	switch (payload.type) {
 		case "human_contact.completed":
 			return await handleHumanContactCompleted(
 				thread,
 				payload as HumanContactCompleted,
+				stateId,
 			);
 		case "function_call.completed":
 			return await handleFunctionCallCompleted(
 				thread,
 				payload as FunctionCallCompleted,
+				stateId,
 			);
 		default:
 			throw new Error(`Unknown payload type: ${(payload as any).type}`);
