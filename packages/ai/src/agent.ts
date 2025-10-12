@@ -13,13 +13,15 @@ import type {
 	Thread,
 	WebhookPayload,
 } from "./schemas";
-import { createHumanContactRequest } from "./schemas";
+import { createHumanContact } from "./contact";
 import { saveThreadState } from "./state";
 import {
 	evaluateExpression,
 	validateMathematicalExpression,
+	formatCalculationResult,
 } from "./tools/calculator";
 import { threadToPrompt } from "./utils";
+import type { EmailPayload } from "./schemas";
 
 // Define specific kwargs types for known function handlers
 type VercelDeploymentKwargs = {
@@ -54,6 +56,28 @@ const functionHandlers: Record<
 			status: "tag and push to prod not implemented yet",
 		}));
 	},
+};
+
+// Helper function to extract email address from thread
+const getEmailFromThread = (thread: Thread): string | null => {
+	// First try to get from initial_email
+	if (thread.initial_email) {
+		const email = thread.initial_email as EmailPayload;
+		if (email.from_address) {
+			return email.from_address;
+		}
+	}
+
+	// Fallback: look for email_received event in thread events
+	const emailEvent = thread.events.find(event => event.type === "email_received");
+	if (emailEvent) {
+		const email = emailEvent.data as EmailPayload;
+		if (email.from_address) {
+			return email.from_address;
+		}
+	}
+
+	return null;
 };
 
 const appendResult = async (
@@ -114,16 +138,33 @@ const _handleNextStep = async (
 		case "done_for_now": {
 			stateId = await saveThreadState(thread);
 
-			// Create human contact request for email
-			const doneContactRequest = createHumanContactRequest(
+			// Get email address from thread
+			const emailAddress = getEmailFromThread(thread);
+			if (!emailAddress) {
+				console.error("No email address found in thread for contact");
+				thread.events.push({
+					type: "error",
+					data: "No email address found in thread for human contact",
+				});
+				return false;
+			}
+
+			// Send human contact via email
+			const contactDelivery = await createHumanContact(
 				nextStep.message,
-				"email",
-				{ stateId },
+				{
+					email: {
+						address: emailAddress,
+						subject: "AI Agent Task Completed",
+					},
+				},
+				stateId,
 			);
 
+			// Add contact delivery result to thread events
 			thread.events.push({
-				type: "human_contact_request",
-				data: doneContactRequest,
+				type: "human_contact_sent",
+				data: contactDelivery,
 			});
 
 			console.log(`Task completed - ${nextStep.message}`);
@@ -133,16 +174,33 @@ const _handleNextStep = async (
 		case "request_more_information": {
 			stateId = await saveThreadState(thread);
 
-			// Create human contact request for email
-			const clarificationContactRequest = createHumanContactRequest(
+			// Get email address from thread
+			const emailAddress = getEmailFromThread(thread);
+			if (!emailAddress) {
+				console.error("No email address found in thread for contact");
+				thread.events.push({
+					type: "error",
+					data: "No email address found in thread for human contact",
+				});
+				return false;
+			}
+
+			// Send human contact via email
+			const contactDelivery = await createHumanContact(
 				nextStep.message,
-				"email",
-				{ stateId },
+				{
+					email: {
+						address: emailAddress,
+						subject: "AI Agent Needs Clarification",
+					},
+				},
+				stateId,
 			);
 
+			// Add contact delivery result to thread events
 			thread.events.push({
-				type: "human_contact_request",
-				data: clarificationContactRequest,
+				type: "human_contact_sent",
+				data: contactDelivery,
 			});
 
 			console.log(`Requesting clarification - ${nextStep.message}`);
@@ -183,12 +241,17 @@ const _handleNextStep = async (
 				// Perform the calculation
 				const calculationResult = evaluateExpression(nextStep.expression);
 
-				return {
+				const result = {
 					expression: nextStep.expression,
 					result: calculationResult.result,
 					steps: calculationResult.steps,
 					error: calculationResult.error,
 					explanation: nextStep.explanation,
+				};
+
+				return {
+					...result,
+					formatted: formatCalculationResult(calculationResult),
 				};
 			});
 

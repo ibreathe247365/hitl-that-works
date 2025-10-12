@@ -20,11 +20,11 @@ export function Sidebar() {
 
 	const handleCreateThread = () => {
 		const stateId = `thread_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-		router.push(`/threads/${stateId}`);
+		router.push(`/dashboard/threads/${stateId}`);
 	};
 
 	const handleViewThreads = () => {
-		router.push("/");
+		router.push("/dashboard");
 	};
 
 	return (

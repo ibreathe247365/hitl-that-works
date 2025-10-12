@@ -22,7 +22,7 @@ export default function ThreadDetailPage() {
 	const handleMessageSent = (newStateId: string) => {
 		// Navigate to the new stateId if it's different
 		if (newStateId !== stateId) {
-			router.push(`/threads/${newStateId}`);
+			router.push(`/dashboard/threads/${newStateId}`);
 		}
 	};
 
@@ -51,7 +51,7 @@ export default function ThreadDetailPage() {
 				<Button
 					variant="ghost"
 					size="sm"
-					onClick={() => router.push("/")}
+					onClick={() => router.push("/dashboard")}
 					className="flex items-center gap-2"
 				>
 					<ArrowLeftIcon className="h-4 w-4" />

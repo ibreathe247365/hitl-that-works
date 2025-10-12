@@ -1,9 +1,7 @@
 import * as yaml from "js-yaml";
 import type {
-	ContactChannel,
 	EmailPayload,
 	Event,
-	HumanContactRequest,
 	Thread,
 } from "./schemas";
 
@@ -55,40 +53,4 @@ export const eventToPrompt = (event: Event) => {
 
 export const threadToPrompt = (thread: Thread) => {
 	return thread.events.map(eventToPrompt).join("\n\n");
-};
-
-// Helper function to create email contact channel
-export const createEmailContactChannel = (
-	email: EmailPayload,
-): ContactChannel => {
-	return {
-		email: {
-			address: email.from_address,
-			subject: email.subject,
-			in_reply_to_message_id: email.message_id,
-			references_message_id: email.message_id,
-		},
-	};
-};
-
-// Helper function to process human contact requests
-export const processHumanContactRequest = (
-	request: HumanContactRequest,
-): void => {
-	console.log(`Human contact request: ${request.message}`);
-	console.log(`Contact method: ${request.contact_method}`);
-	console.log(`State: ${JSON.stringify(request.state)}`);
-
-	// Here you would implement the actual contact logic based on the method
-	// For now, we just log the request
-	switch (request.contact_method) {
-		case "email":
-			console.log(`Would send email to: ${request.message}`);
-			break;
-		case "webhook":
-			console.log(`Would send webhook: ${request.message}`);
-			break;
-		default:
-			console.log(`Unknown contact method: ${request.contact_method}`);
-	}
 };
