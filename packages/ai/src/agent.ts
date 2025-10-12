@@ -151,21 +151,6 @@ const _handleNextStep = async (
 
 		case "nothing_to_do":
 			stateId = await saveThreadState(thread);
-			console.log(`NOTHING TO DO - ${nextStep.message}`);
-
-			if (process.env.DEBUG_CONTACT_HUMAN_ON_NOTHING_TO_DO) {
-				const nothingContactRequest = createHumanContactRequest(
-					`NOTHING TO DO - ${nextStep.message}`,
-					"email",
-					{ stateId },
-				);
-
-				thread.events.push({
-					type: "human_contact_request",
-					data: nothingContactRequest,
-				});
-				console.log("Contacting human about nothing to do");
-			}
 
 			return false;
 

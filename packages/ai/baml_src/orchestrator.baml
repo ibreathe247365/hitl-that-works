@@ -1,48 +1,39 @@
-// Calculator agent functionality
-
-// Basic calculation operations
 class Calculation {
-  operation string // "add", "subtract", "multiply", "divide", "power", "sqrt"
+  operation string
   operands float[]
   result float
-  expression string // The mathematical expression that was calculated
+  expression string
 }
 
-// Intent to perform a calculation
 class IntentCalculate {
   intent "calculate"
-  expression string // Mathematical expression to evaluate
-  explanation string // Brief explanation of what the calculation does
+  expression string
+  explanation string
 }
 
-// Intent to request clarification from human
 class ClarificationRequest {
   intent "request_more_information"
-  message string // What information is needed from the human
+  message string
 }
 
-// Intent to indicate task is complete
 class DoneForNow {
   intent "done_for_now"
-  message string // Summary of what was accomplished
+  message string
 }
 
-// Intent when no action is needed
 class NothingToDo {
   intent "nothing_to_do"
-  message string // Explanation of why no action is needed
+  message string
 }
 
-// Intent to wait for a specified time
 class Await {
   intent "await"
   seconds int
-  reasoning string // Why we need to wait
+  reasoning string
 }
 
-// Main function to determine the next step
 function DetermineNextStep(thread: string) -> ClarificationRequest | DoneForNow | IntentCalculate | NothingToDo | Await {
-  client "openai-responses/gpt-5-mini"
+  client CustomGemini
   prompt #"
     You are a helpful calculator agent that can perform mathematical calculations via email.
     
@@ -68,9 +59,8 @@ function DetermineNextStep(thread: string) -> ClarificationRequest | DoneForNow 
   "#
 }
 
-// Function to perform calculations
 function PerformCalculation(expression: string) -> Calculation {
-  client "openai-responses/gpt-5-mini"
+  client CustomGemini
   prompt #"
     You are a mathematical calculation engine. Evaluate the following expression and provide the result.
     
@@ -90,9 +80,8 @@ function PerformCalculation(expression: string) -> Calculation {
   "#
 }
 
-// Function to squash response context for error handling
 function SquashResponseContext(thread: string, error: string) -> string {
-  client "openai-responses/gpt-5-mini"
+  client CustomGemini
   prompt #"
     You are summarizing an error that occurred during calculation processing.
     

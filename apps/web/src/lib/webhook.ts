@@ -5,9 +5,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import * as svix from "svix";
 
 // Configuration
-const webhookSecret = process.env.WEBHOOK_SIGNING_SECRET_NAME
-	? process.env[process.env.WEBHOOK_SIGNING_SECRET_NAME]
-	: process.env.WEBHOOK_SIGNING_SECRET;
+const webhookSecret = process.env.WEBHOOK_SIGNING_SECRET;
 const debugMode = process.env.DEBUG_DISABLE_WEBHOOK_VERIFICATION === "true";
 const webhookVerifier = webhookSecret ? new svix.Webhook(webhookSecret) : null;
 

@@ -53,14 +53,13 @@ client<llm> CustomHaiku {
   }
 }
 
-// Example Google AI client (uncomment to use)
-// client<llm> CustomGemini {
-//   provider google-ai
-//   options {
-//     model "gemini-2.5-pro"
-//     api_key env.GOOGLE_API_KEY
-//   }
-// }
+client<llm> CustomGemini {
+  provider google-ai
+  options {
+    model "gemini-2.5-flash"
+    api_key env.GOOGLE_API_KEY
+  }
+}
 
 // Example AWS Bedrock client (uncomment to use)
 // client<llm> CustomBedrock {
