@@ -139,6 +139,8 @@ export async function enqueueWebhookProcessing(
 		delay: QUEUE_CONFIG.retryDelay,
 	});
 
+	console.log("response", JSON.stringify(response, null, 2));
+
 	const jobId = response.messageId;
 
 	console.log(`Enqueued webhook processing job: ${jobId}`, {
