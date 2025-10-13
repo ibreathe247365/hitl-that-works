@@ -1,7 +1,7 @@
-import { api } from "@hitl/backend/convex/_generated/api";
-import { ConvexHttpClient } from "convex/browser";
 import { enqueueWebhookProcessing } from "@hitl/ai";
 import type { WebhookPayload } from "@hitl/ai/schemas";
+import { api } from "@hitl/backend/convex/_generated/api";
+import { ConvexHttpClient } from "convex/browser";
 import { trackWebhookEvent } from "./webhook";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -30,11 +30,7 @@ export async function processMessage(
 	const { webhookPayload, stateId, userId, source } = options;
 
 	// Enqueue the webhook processing
-	const jobId = await enqueueWebhookProcessing(
-		webhookPayload,
-		stateId,
-		userId,
-	);
+	const jobId = await enqueueWebhookProcessing(webhookPayload, stateId, userId);
 
 	// Track the event with source information
 	if (stateId) {
@@ -68,7 +64,9 @@ export async function getUserByEmail(email: string) {
  * @param stateId Thread state ID
  * @returns User ID or undefined if not found
  */
-export async function getUserIdByStateId(stateId: string): Promise<string | undefined> {
+export async function getUserIdByStateId(
+	stateId: string,
+): Promise<string | undefined> {
 	try {
 		const foundUserId = await convex.query(api.threads.getUserIdByStateId, {
 			stateId,

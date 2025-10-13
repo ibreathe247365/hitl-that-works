@@ -1,15 +1,11 @@
 import type { NextRequest } from "next/server";
 import {
-	createErrorResponse,
-	createSuccessResponse,
-} from "@/lib/webhook";
-import {
-	processMessage,
-	getUserByEmail,
-	ensureThreadState,
 	createHumanContactPayload,
+	ensureThreadState,
+	getUserByEmail,
+	processMessage,
 } from "@/lib/message-processing";
-
+import { createErrorResponse, createSuccessResponse } from "@/lib/webhook";
 
 export async function POST(request: NextRequest) {
 	try {
@@ -26,16 +22,13 @@ export async function POST(request: NextRequest) {
 		}
 
 		if (!email) {
-			return createErrorResponse(
-				"Email is required",
-				"validation_error",
-				400,
-				{ required: ["email"] },
-			);
+			return createErrorResponse("Email is required", "validation_error", 400, {
+				required: ["email"],
+			});
 		}
 
 		const user = await getUserByEmail(email);
-		
+
 		if (!user) {
 			return createErrorResponse(
 				"User not found with the provided email",

@@ -102,7 +102,9 @@ export const ThreadSchema = z.object({
 export type Event = z.infer<typeof EventSchema>;
 export type Thread = z.infer<typeof ThreadSchema>;
 export type HumanResponseEvent = z.infer<typeof HumanResponseEventSchema>;
-export type RequestMoreInformationEvent = z.infer<typeof RequestMoreInformationEventSchema>;
+export type RequestMoreInformationEvent = z.infer<
+	typeof RequestMoreInformationEventSchema
+>;
 export type UserMessageEvent = z.infer<typeof UserMessageEventSchema>;
 export type AIResponseEvent = z.infer<typeof AIResponseEventSchema>;
 export type AssistantMessageEvent = z.infer<typeof AssistantMessageEventSchema>;

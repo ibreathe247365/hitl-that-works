@@ -139,7 +139,12 @@ const _handleNextStep = async (
 	let currentStateId: string | null = null;
 	switch (nextStep.intent) {
 		case "done_for_now": {
-			currentStateId = await saveThreadState(thread, undefined, undefined, stateId);
+			currentStateId = await saveThreadState(
+				thread,
+				undefined,
+				undefined,
+				stateId,
+			);
 
 			// Get email address from thread
 			const emailAddress = getEmailFromThread(thread);
@@ -175,7 +180,12 @@ const _handleNextStep = async (
 		}
 
 		case "request_more_information": {
-			currentStateId = await saveThreadState(thread, undefined, undefined, stateId);
+			currentStateId = await saveThreadState(
+				thread,
+				undefined,
+				undefined,
+				stateId,
+			);
 
 			// Get email address from thread
 			const emailAddress = getEmailFromThread(thread);
@@ -211,7 +221,12 @@ const _handleNextStep = async (
 		}
 
 		case "nothing_to_do":
-			currentStateId = await saveThreadState(thread, undefined, undefined, stateId);
+			currentStateId = await saveThreadState(
+				thread,
+				undefined,
+				undefined,
+				stateId,
+			);
 
 			return false;
 

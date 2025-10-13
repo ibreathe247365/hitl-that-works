@@ -2,9 +2,9 @@
 
 import { api } from "@hitl/backend/convex/_generated/api";
 import { useQuery } from "convex/react";
+import { formatDistanceToNow } from "date-fns";
 import { ArrowLeftIcon } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { formatDistanceToNow } from "date-fns";
 import { EventChain } from "@/components/event-chain";
 import { MessageInput } from "@/components/message-input";
 import { RedisStatePanel } from "@/components/redis-state-panel";
@@ -29,7 +29,7 @@ export default function ThreadDetailPage() {
 	if (thread === undefined) {
 		return (
 			<div className="flex h-screen flex-col bg-background">
-				<div className="flex items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4">
+				<div className="flex items-center gap-4 border-b bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 					<Button
 						variant="ghost"
 						size="sm"
@@ -39,9 +39,9 @@ export default function ThreadDetailPage() {
 						<ArrowLeftIcon className="h-4 w-4" />
 					</Button>
 				</div>
-				<div className="flex-1 flex items-center justify-center">
+				<div className="flex flex-1 items-center justify-center">
 					<div className="text-center">
-						<div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+						<div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
 						<p className="text-muted-foreground">Loading thread...</p>
 					</div>
 				</div>
@@ -52,7 +52,7 @@ export default function ThreadDetailPage() {
 	if (thread === null) {
 		return (
 			<div className="flex h-screen flex-col bg-background">
-				<div className="flex items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4">
+				<div className="flex items-center gap-4 border-b bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 					<Button
 						variant="ghost"
 						size="sm"
@@ -62,9 +62,9 @@ export default function ThreadDetailPage() {
 						<ArrowLeftIcon className="h-4 w-4" />
 					</Button>
 				</div>
-				<div className="flex-1 flex items-center justify-center">
+				<div className="flex flex-1 items-center justify-center">
 					<div className="text-center">
-						<div className="mx-auto mb-4 h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
 							<ArrowLeftIcon className="h-6 w-6 text-destructive" />
 						</div>
 						<h3 className="mb-2 font-semibold text-lg">Thread Not Found</h3>
@@ -80,38 +80,40 @@ export default function ThreadDetailPage() {
 	return (
 		<div className="flex h-screen flex-col bg-background">
 			{/* Header */}
-			<div className="flex items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6 py-4">
+			<div className="flex items-center gap-4 border-b bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 				<Button
 					variant="ghost"
 					size="sm"
 					onClick={() => router.push("/dashboard")}
-					className="flex items-center gap-2 hover:bg-muted/50 -ml-2"
+					className="-ml-2 flex items-center gap-2 hover:bg-muted/50"
 				>
 					<ArrowLeftIcon className="h-4 w-4" />
 					<span className="hidden sm:inline">Back</span>
 				</Button>
-				<div className="flex items-center gap-4 min-w-0 flex-1">
-					<div className="flex items-center gap-3 min-w-0">
-						<h1 className="font-semibold text-xl truncate">Thread {stateId.slice(-8)}</h1>
-						<Badge variant="secondary" className="text-xs flex-shrink-0">
+				<div className="flex min-w-0 flex-1 items-center gap-4">
+					<div className="flex min-w-0 items-center gap-3">
+						<h1 className="truncate font-semibold text-xl">
+							Thread {stateId.slice(-8)}
+						</h1>
+						<Badge variant="secondary" className="flex-shrink-0 text-xs">
 							{thread.initial_email ? "Email" : "Chat"}
 						</Badge>
 					</div>
-					<div className="h-5 w-px bg-border hidden sm:block"></div>
-					<div className="text-muted-foreground text-sm flex-shrink-0">
+					<div className="hidden h-5 w-px bg-border sm:block" />
+					<div className="flex-shrink-0 text-muted-foreground text-sm">
 						{thread.events.length} event{thread.events.length !== 1 ? "s" : ""}
 					</div>
 				</div>
 			</div>
 
 			{/* Main Content */}
-			<div className="flex-1 flex flex-col overflow-hidden">
+			<div className="flex flex-1 flex-col overflow-hidden">
 				{/* Main Content Area */}
-				<div className="flex-1 min-h-0 p-4">
+				<div className="min-h-0 flex-1 p-4">
 					<div className="h-full">
 						{/* Desktop: Use resizable panels */}
-						<div className="hidden lg:block h-full">
-							<Horizontal 
+						<div className="hidden h-full lg:block">
+							<Horizontal
 								defaultLayout={[60, 40]}
 								left={
 									<div className="h-full min-h-0 min-w-0">
@@ -125,10 +127,10 @@ export default function ThreadDetailPage() {
 								}
 							/>
 						</div>
-						
+
 						{/* Mobile/Tablet: Stack vertically */}
-						<div className="lg:hidden h-full flex flex-col gap-4">
-							<div className="flex-1 min-h-0">
+						<div className="flex h-full flex-col gap-4 lg:hidden">
+							<div className="min-h-0 flex-1">
 								<EventChain events={thread.events} />
 							</div>
 							<div className="h-80 flex-shrink-0">
@@ -137,19 +139,21 @@ export default function ThreadDetailPage() {
 						</div>
 					</div>
 				</div>
-				
+
 				{/* Bottom Input Area */}
 				<div className="flex-shrink-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-					<MessageInput
-						stateId={stateId}
-						onMessageSent={handleMessageSent}
-					/>
+					<MessageInput stateId={stateId} onMessageSent={handleMessageSent} />
 					<div className="px-6 py-3">
 						<div className="mx-auto max-w-4xl">
 							<div className="flex flex-col gap-2 text-muted-foreground text-xs sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-								<span>Last updated {formatDistanceToNow(new Date(thread.updatedAt), { addSuffix: true })}</span>
+								<span>
+									Last updated{" "}
+									{formatDistanceToNow(new Date(thread.updatedAt), {
+										addSuffix: true,
+									})}
+								</span>
 								<div className="flex items-center gap-2">
-									<div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+									<div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
 									<span className="font-medium">Active</span>
 								</div>
 							</div>

@@ -11,9 +11,9 @@ import {
 
 async function handlePOST(request: NextRequest) {
 	try {
-        const body = await request.text();
-		
-        const jobData: QueueJobData = JSON.parse(body);
+		const body = await request.text();
+
+		const jobData: QueueJobData = JSON.parse(body);
 
 		const validationResult = WebhookPayloadSchema.safeParse(
 			jobData.webhookPayload,
@@ -30,10 +30,10 @@ async function handlePOST(request: NextRequest) {
 
 		const webhookPayload = validationResult.data;
 
-        const thread = await getThreadFromPayload(webhookPayload);
+		const thread = await getThreadFromPayload(webhookPayload);
 
 		try {
-            await handleHumanResponse(thread, webhookPayload, jobData.threadStateId);
+			await handleHumanResponse(thread, webhookPayload, jobData.threadStateId);
 
 			if (jobData.threadStateId) {
 				trackWebhookEvent(

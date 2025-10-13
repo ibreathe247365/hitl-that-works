@@ -4,6 +4,7 @@ import { api } from "@hitl/backend/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { ListIcon, PlusIcon, UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/popover";
 import { authClient } from "@/lib/auth-client";
 import { ModeToggle } from "./mode-toggle";
-import { toast } from "sonner";
 
 export function Sidebar() {
 	const router = useRouter();
@@ -22,7 +22,7 @@ export function Sidebar() {
 
 	const handleCreateThread = async () => {
 		const stateId = `thread_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-		
+
 		try {
 			await addEventMutation({
 				stateId,
@@ -30,7 +30,7 @@ export function Sidebar() {
 				data: { message: "Thread created", userId: user?._id },
 				userId: user?._id,
 			});
-			
+
 			router.push(`/dashboard/threads/${stateId}`);
 		} catch (error) {
 			console.error("Failed to create thread:", error);
@@ -43,13 +43,13 @@ export function Sidebar() {
 	};
 
 	return (
-		<div className="fixed top-0 left-0 flex h-full w-16 flex-col items-center space-y-6 border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-6">
+		<div className="fixed top-0 left-0 flex h-full w-16 flex-col items-center space-y-6 border-r bg-background/95 py-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 			{/* Create Thread Button */}
 			<Button
 				variant="ghost"
 				size="icon"
 				onClick={handleCreateThread}
-				className="h-12 w-12 hover:bg-primary/10 hover:text-primary transition-colors"
+				className="h-12 w-12 transition-colors hover:bg-primary/10 hover:text-primary"
 				title="Create new thread"
 			>
 				<PlusIcon className="h-6 w-6" />
@@ -60,7 +60,7 @@ export function Sidebar() {
 				variant="ghost"
 				size="icon"
 				onClick={handleViewThreads}
-				className="h-12 w-12 hover:bg-primary/10 hover:text-primary transition-colors"
+				className="h-12 w-12 transition-colors hover:bg-primary/10 hover:text-primary"
 				title="View all threads"
 			>
 				<ListIcon className="h-6 w-6" />
@@ -72,7 +72,11 @@ export function Sidebar() {
 			{/* User Avatar with Popover */}
 			<Popover>
 				<PopoverTrigger asChild>
-					<Button variant="ghost" size="icon" className="h-12 w-12 hover:bg-primary/10 hover:text-primary transition-colors">
+					<Button
+						variant="ghost"
+						size="icon"
+						className="h-12 w-12 transition-colors hover:bg-primary/10 hover:text-primary"
+					>
 						<Avatar className="h-8 w-8">
 							<AvatarImage src={user?.image || undefined} />
 							<AvatarFallback>

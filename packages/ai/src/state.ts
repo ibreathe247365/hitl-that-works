@@ -25,7 +25,9 @@ const ThreadStateWithMetadataSchema = z.object({
 
 // Export inferred types
 export type ThreadMetadata = z.infer<typeof ThreadMetadataSchema>;
-export type ThreadStateWithMetadata = z.infer<typeof ThreadStateWithMetadataSchema>;
+export type ThreadStateWithMetadata = z.infer<
+	typeof ThreadStateWithMetadataSchema
+>;
 
 export async function saveThreadState(
 	thread: Thread,
@@ -33,7 +35,9 @@ export async function saveThreadState(
 	userId?: string,
 	existingStateId?: string,
 ): Promise<string> {
-	const stateId = existingStateId || `thread_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+	const stateId =
+		existingStateId ||
+		`thread_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
 	const stateWithMetadata: ThreadStateWithMetadata = {
 		thread,

@@ -1,6 +1,6 @@
 import { Client } from "@upstash/qstash";
-import type { WebhookPayload } from "./schemas";
 import { handleHumanResponse } from "./agent";
+import type { WebhookPayload } from "./schemas";
 import { getThreadState, saveThreadState } from "./state";
 
 const qstash = new Client({
@@ -32,7 +32,7 @@ async function processWebhookDirectly(
 	threadStateId?: string,
 ): Promise<string> {
 	const mockJobId = `direct_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-	
+
 	console.log(`Processing webhook directly (localhost mode): ${mockJobId}`, {
 		payloadType: webhookPayload.type,
 		threadStateId,
@@ -41,38 +41,44 @@ async function processWebhookDirectly(
 	try {
 		// Get the thread from Redis
 		let thread = await getThreadState(threadStateId || "");
-		
+
 		// If thread doesn't exist, create an initial thread state
 		if (!thread) {
-			console.log(`Creating initial thread state for stateId: ${threadStateId}`);
-			
+			console.log(
+				`Creating initial thread state for stateId: ${threadStateId}`,
+			);
+
 			// Create initial thread with the human response
 			const initialThread = {
 				events: [
 					{
 						type: "human_response",
-						data: webhookPayload.type === "human_contact.completed" 
-							? (webhookPayload as any).event?.status?.response || "No response provided"
-							: "Initial message",
+						data:
+							webhookPayload.type === "human_contact.completed"
+								? (webhookPayload as any).event?.status?.response ||
+									"No response provided"
+								: "Initial message",
 					},
 				],
 				initial_email: null,
 			};
-			
+
 			// Save the initial thread state
 			await saveThreadState(initialThread, undefined, undefined, threadStateId);
-			
+
 			// Get the thread again to ensure it was saved
 			thread = await getThreadState(threadStateId || "");
-			
+
 			if (!thread) {
-				throw new Error(`Failed to create thread state for stateId: ${threadStateId}`);
+				throw new Error(
+					`Failed to create thread state for stateId: ${threadStateId}`,
+				);
 			}
 		}
 
 		// Process the webhook directly
 		await handleHumanResponse(thread, webhookPayload, threadStateId);
-		
+
 		console.log(`Successfully processed webhook directly: ${mockJobId}`);
 		return mockJobId;
 	} catch (error) {

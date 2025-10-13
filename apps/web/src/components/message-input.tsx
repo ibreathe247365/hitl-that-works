@@ -58,14 +58,16 @@ export function MessageInput({ stateId, onMessageSent }: MessageInputProps) {
 		<div className="px-6 py-4">
 			<div className="mx-auto max-w-4xl">
 				<div className="mb-3 flex items-center gap-2">
-					<div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-					<span className="text-muted-foreground text-sm font-medium">Ready to chat</span>
+					<div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+					<span className="font-medium text-muted-foreground text-sm">
+						Ready to chat
+					</span>
 				</div>
 				<PromptInput onSubmit={handleSubmit}>
 					<PromptInputBody>
-						<PromptInputTextarea 
-							placeholder="Type your message... (Press Enter to send, Shift+Enter for new line)" 
-							className="min-h-[60px] resize-none border-0 bg-transparent focus:ring-0 focus:outline-none text-base"
+						<PromptInputTextarea
+							placeholder="Type your message... (Press Enter to send, Shift+Enter for new line)"
+							className="min-h-[60px] resize-none border-0 bg-transparent text-base focus:outline-none focus:ring-0"
 						/>
 					</PromptInputBody>
 					<PromptInputToolbar>

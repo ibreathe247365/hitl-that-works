@@ -13,7 +13,7 @@ export const verifyWebhookSignature = (
 	request: NextRequest,
 	body: string,
 ): boolean => {
-	return true
+	return true;
 	// if (debugMode || !webhookSecret) return true;
 
 	// const wh = new svix.Webhook(webhookSecret);

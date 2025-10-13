@@ -1,6 +1,10 @@
 import { getThreadStateWithMetadata } from "@hitl/ai";
 import { type NextRequest, NextResponse } from "next/server";
-import { logger, extractRequestContext, measureExecutionTime } from "@/lib/logger";
+import {
+	extractRequestContext,
+	logger,
+	measureExecutionTime,
+} from "@/lib/logger";
 
 export async function GET(
 	request: NextRequest,
@@ -18,7 +22,12 @@ export async function GET(
 		});
 
 		if (!stateId) {
-			logger.logValidationError(requestContext, "stateId", stateId, "StateId is required");
+			logger.logValidationError(
+				requestContext,
+				"stateId",
+				stateId,
+				"StateId is required",
+			);
 			return NextResponse.json(
 				{ error: "StateId is required" },
 				{ status: 400 },
@@ -28,7 +37,7 @@ export async function GET(
 		const threadState = await measureExecutionTime(
 			() => getThreadStateWithMetadata(stateId),
 			requestContext,
-			"Get thread state with metadata"
+			"Get thread state with metadata",
 		);
 
 		if (!threadState) {
@@ -54,13 +63,17 @@ export async function GET(
 		return NextResponse.json(threadState);
 	} catch (error) {
 		const duration = Date.now() - startTime;
-		logger.error("Error fetching Redis state", {
-			...requestContext,
-			duration: `${duration}ms`,
-		}, error instanceof Error ? error : new Error(String(error)));
-		
+		logger.error(
+			"Error fetching Redis state",
+			{
+				...requestContext,
+				duration: `${duration}ms`,
+			},
+			error instanceof Error ? error : new Error(String(error)),
+		);
+
 		logger.logRequestEnd(requestContext, 500, duration);
-		
+
 		return NextResponse.json(
 			{ error: "Failed to fetch thread state" },
 			{ status: 500 },

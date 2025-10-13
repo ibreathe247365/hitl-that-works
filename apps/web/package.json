@@ -8,6 +8,8 @@
 		"start": "next start"
 	},
 	"dependencies": {
+		"@boundaryml/baml": "^0.211.0",
+		"@boundaryml/baml-nextjs-plugin": "^0.1.0",
 		"@convex-dev/better-auth": "catalog:",
 		"@hitl/ai": "workspace:*",
 		"@hitl/backend": "workspace:*",
@@ -51,7 +53,6 @@
 		"zod": "^4.0.2"
 	},
 	"devDependencies": {
-		"@boundaryml/baml-nextjs-plugin": "^0.1.0",
 		"@tailwindcss/postcss": "^4.1.10",
 		"@types/node": "catalog:",
 		"@types/react": "~19.1.10",
