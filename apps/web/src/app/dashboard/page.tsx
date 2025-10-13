@@ -6,11 +6,12 @@ import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function ThreadListPage() {
 	const threads = useQuery(api.threads.getThreads);
 	const router = useRouter();
+	const [highlightedThreadId, setHighlightedThreadId] = useState<string | null>(null);
 
 	const user = useQuery(api.auth.getCurrentUser);
 
@@ -34,7 +35,13 @@ export default function ThreadListPage() {
 						const result = await response.json();
 						sessionStorage.removeItem("pendingMessage");
 
-						router.push(`/dashboard/threads/${result.stateId}`);
+						// Highlight the newly created thread instead of navigating
+						setHighlightedThreadId(result.data.stateId);
+						
+						// Remove highlight after 3 seconds
+						setTimeout(() => {
+							setHighlightedThreadId(null);
+						}, 3000);
 					}
 				} catch (error) {
 					console.error("Error sending pending message:", error);
@@ -44,7 +51,7 @@ export default function ThreadListPage() {
 		};
 
 		handlePendingMessage();
-	}, [router, user]);
+	}, [user]);
 
 	if (threads === undefined) {
 		return (
@@ -75,12 +82,21 @@ export default function ThreadListPage() {
 				</div>
 
 				<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-					{threads.map((thread) => (
-						<Card
-							key={thread.stateId}
-							className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] group"
-							onClick={() => router.push(`/dashboard/threads/${thread.stateId}`)}
-						>
+					{threads.map((thread) => {
+						const isHighlighted = highlightedThreadId === thread.stateId;
+						return (
+							<Card
+								key={thread.stateId}
+								className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] group ${
+									isHighlighted 
+										? "shadow-lg scale-[1.02]" 
+										: ""
+								}`}
+								onClick={() => router.push(`/dashboard/threads/${thread.stateId}`)}
+								style={isHighlighted ? {
+									background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.05) 50%, rgba(59, 130, 246, 0.1) 100%)'
+								} : undefined}
+							>
 							<CardHeader className="pb-3">
 								<div className="flex items-center justify-between">
 									<CardTitle className="truncate font-semibold text-base group-hover:text-primary transition-colors">
@@ -112,7 +128,8 @@ export default function ThreadListPage() {
 								</div>
 							</CardContent>
 						</Card>
-					))}
+						);
+					})}
 				</div>
 			</div>
 		</div>
