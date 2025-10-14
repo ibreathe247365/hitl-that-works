@@ -33,7 +33,7 @@ LOG_LEVEL=info
 
 ### External API Calls
 - Webhook requests and responses
-- Queue operations (QStash)
+- Inngest event sends and function runs
 - External service calls
 
 ### Webhook Events

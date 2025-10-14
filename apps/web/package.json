@@ -5,7 +5,8 @@
 	"scripts": {
 		"dev": "next dev --port=3001",
 		"build": "next build",
-		"start": "next start"
+		"start": "next start",
+		"inngest:dev": "npx inngest-cli@latest dev"
 	},
 	"dependencies": {
 		"@boundaryml/baml": "^0.211.0",
@@ -25,7 +26,7 @@
 		"@radix-ui/react-tooltip": "^1.2.8",
 		"@radix-ui/react-use-controllable-state": "^1.2.2",
 		"@tanstack/react-form": "^1.12.3",
-		"@upstash/qstash": "^2.7.0",
+		"inngest": "^3.19.1",
 		"@xyflow/react": "^12.8.6",
 		"ai": "^5.0.68",
 		"better-auth": "catalog:",

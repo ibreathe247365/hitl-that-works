@@ -29,10 +29,10 @@
 	"dependencies": {
 		"@boundaryml/baml": "^0.211.0",
 		"@types/js-yaml": "^4.0.9",
-		"@upstash/qstash": "^2.7.0",
 		"@upstash/redis": "^1.35.5",
 		"@hitl/backend": "workspace:*",
 		"@slack/web-api": "^7.11.0",
+		"inngest": "^3.19.1",
 		"convex": "catalog:",
 		"js-yaml": "^4.1.0",
 		"resend": "^4.0.0",
