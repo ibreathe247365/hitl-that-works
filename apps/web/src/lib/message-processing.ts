@@ -1,8 +1,7 @@
-import { enqueueWebhookProcessing } from "@hitl/ai";
+import { enqueueWebhookProcessing, startOperation } from "@hitl/ai";
 import type { WebhookPayload } from "@hitl/ai/schemas";
 import { api } from "@hitl/backend/convex/_generated/api";
 import { ConvexHttpClient } from "convex/browser";
-import { trackWebhookEvent } from "./webhook";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -29,19 +28,14 @@ export async function processMessage(
 ): Promise<ProcessMessageResult> {
 	const { webhookPayload, stateId, userId, source } = options;
 
-	// Enqueue the webhook processing
-	const jobId = await enqueueWebhookProcessing(webhookPayload, stateId, userId);
+    const jobId = await enqueueWebhookProcessing(webhookPayload, stateId, userId);
 
-	// Track the event with source information
-	if (stateId) {
-		trackWebhookEvent(
-			stateId,
-			webhookPayload,
-			"webhook_received",
-			{ jobId, source },
-			userId,
-		);
-	}
+    if (stateId) {
+        startOperation(stateId, "webhook", "webhook.received", {
+            source: "webhook",
+            payload: { jobId, source, payloadType: webhookPayload.type },
+        });
+    }
 
 	return {
 		jobId,
@@ -100,7 +94,6 @@ export async function ensureThreadState(
 				userId: userId,
 			});
 		} catch (error) {
-			// Log error but don't fail - thread can still be processed
 			console.error("Failed to create thread event:", error);
 		}
 	}

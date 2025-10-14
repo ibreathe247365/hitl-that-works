@@ -35,4 +35,11 @@ export { db } from "./db";
 export * from "./queue";
 export * from "./schemas";
 export * from "./state";
-export { addThreadEvent, syncLatestEventToConvex } from "./sync";
+export {
+    addThreadEvent,
+    syncLatestEventToConvex,
+    queueOperation,
+    startOperation,
+    succeedOperation,
+    failOperation,
+} from "./sync";

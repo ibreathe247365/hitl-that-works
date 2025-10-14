@@ -31,6 +31,166 @@ interface EventChainProps {
 }
 
 export function EventChain({ events }: EventChainProps) {
+    const formatRelativeTime = (timestamp?: string | number | Date) => {
+        if (!timestamp) return null;
+        return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+    };
+
+    const eventIndex = new WeakMap<Event, number>();
+    for (let i = 0; i < events.length; i++) {
+        eventIndex.set(events[i], i);
+    }
+
+	const operationIdToEvent = new Map<string, Event>();
+	const operationIdToChildren = new Map<string, Event[]>();
+	const eventsWithOperationId: Event[] = [];
+	for (const currentEvent of events) {
+		const operationId = (currentEvent.data as any)?.operationId as string | undefined;
+		if (operationId) {
+			operationIdToEvent.set(operationId, currentEvent);
+			eventsWithOperationId.push(currentEvent);
+		}
+	}
+	for (const currentEvent of eventsWithOperationId) {
+		const parentOperationId = (currentEvent.data as any)?.parentOperationId as string | undefined;
+		if (parentOperationId) {
+			if (!operationIdToChildren.has(parentOperationId)) operationIdToChildren.set(parentOperationId, []);
+			operationIdToChildren.get(parentOperationId)!.push(currentEvent);
+		}
+	}
+
+	const rootOperationEvents: Event[] = [];
+	for (const currentEvent of eventsWithOperationId) {
+		const parentOperationId = (currentEvent.data as any)?.parentOperationId as string | undefined;
+		if (!parentOperationId || !operationIdToEvent.has(parentOperationId)) {
+			rootOperationEvents.push(currentEvent);
+		}
+	}
+
+	const nonOperationEvents = events.filter((e) => !(e.data as any)?.operationId);
+
+	const getEventLabel = (currentEvent: Event) => {
+		switch (currentEvent.type) {
+			case "user_message":
+				return "User Message";
+			case "tool_call":
+			case "function_call":
+				return currentEvent.data.name || currentEvent.data.function_name || "Tool Call";
+			case "ai_response":
+			case "assistant_message":
+				return "AI Response";
+			case "webhook_processed":
+				return "Webhook Processed";
+			default:
+				return `${currentEvent.type} Event`;
+		}
+	};
+
+	const renderEventContent = (currentEvent: Event) => {
+		switch (currentEvent.type) {
+			case "user_message":
+				return (
+					<div className="space-y-3">
+						<div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800/30 dark:bg-blue-950/20">
+							<p className="text-sm leading-relaxed">
+								{currentEvent.data.message || currentEvent.data.text}
+							</p>
+						</div>
+						{currentEvent.data.timestamp && (
+							<div className="flex items-center gap-1 text-muted-foreground text-xs">
+								<ClockIcon className="h-3 w-3" />
+								{formatRelativeTime(currentEvent.data.timestamp)}
+							</div>
+						)}
+					</div>
+				);
+			case "tool_call":
+			case "function_call":
+				return (
+					<Tool defaultOpen={false}>
+						<ToolHeader
+							title={currentEvent.data.name || currentEvent.data.function_name}
+							type={`tool-${currentEvent.type}` as const}
+							state={
+								(currentEvent.data.status === "in_progress" && "input-streaming") ||
+								(currentEvent.data.status === "succeeded" && "output-available") ||
+								(currentEvent.data.status === "failed" && "output-error") ||
+								"input-available"
+							}
+						/>
+						<ToolContent>
+							<ToolInput input={currentEvent.data.arguments || currentEvent.data.input} />
+							<ToolOutput output={currentEvent.data.result || currentEvent.data.output} errorText={currentEvent.data.error} />
+						</ToolContent>
+					</Tool>
+				);
+			case "ai_response":
+			case "assistant_message":
+				return (
+					<div className="space-y-3">
+						<div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800/30 dark:bg-green-950/20">
+							<p className="text-sm leading-relaxed">
+								{currentEvent.data.message || currentEvent.data.text}
+							</p>
+						</div>
+						{currentEvent.data.timestamp && (
+							<div className="flex items-center gap-1 text-muted-foreground text-xs">
+								<ClockIcon className="h-3 w-3" />
+								{formatRelativeTime(currentEvent.data.timestamp)}
+							</div>
+						)}
+					</div>
+				);
+			case "webhook_processed":
+				return (
+					<div className="flex items-center gap-2">
+						<Badge variant="secondary" className="text-xs">
+							{currentEvent.data.payloadType}
+						</Badge>
+						<span className="text-muted-foreground text-xs">
+							{formatRelativeTime(currentEvent.data.timestamp || Date.now())}
+						</span>
+						{currentEvent.data.durationMs && (
+							<span className="text-muted-foreground text-xs">{`${currentEvent.data.durationMs}ms`}</span>
+						)}
+					</div>
+				);
+			default:
+				return (
+					<pre className="overflow-x-auto rounded-lg border bg-muted p-3 text-xs">
+						{JSON.stringify(currentEvent.data, null, 2)}
+					</pre>
+				);
+		}
+	};
+
+	const EventBranch = ({ node }: { node: Event }) => {
+		const nodeLabel = getEventLabel(node);
+		const childList = operationIdToChildren.get((node.data as any)?.operationId) || [];
+		return (
+			<Task defaultOpen={false}>
+				<TaskTrigger title={nodeLabel}>
+					<div className="flex items-center gap-2">
+						<Badge variant="outline" className="text-xs">{nodeLabel}</Badge>
+						<span className="text-muted-foreground text-xs">
+							{new Date((node.data as any)?.timestamp || Date.now()).toLocaleTimeString()}
+						</span>
+					</div>
+				</TaskTrigger>
+				<TaskContent>
+					<TaskItem>
+						{renderEventContent(node)}
+					</TaskItem>
+                    {childList.map((child) => (
+                        <EventBranch
+                            key={((child.data as any)?.operationId ?? "child") + "-" + (eventIndex.get(child) ?? "na")}
+                            node={child}
+                        />
+                    ))}
+				</TaskContent>
+			</Task>
+		);
+	};
 	if (events.length === 0) {
 		return (
 			<Card className="h-full">
@@ -75,8 +235,14 @@ export function EventChain({ events }: EventChainProps) {
 					<ChainOfThought defaultOpen={true}>
 						<ChainOfThoughtHeader>AI Processing Chain</ChainOfThoughtHeader>
 						<ChainOfThoughtContent>
-							{events.map((event, index) => {
-								switch (event.type) {
+                            {rootOperationEvents.map((rootEvent) => (
+                                <EventBranch
+                                    key={((rootEvent.data as any)?.operationId ?? "root") + "-" + (eventIndex.get(rootEvent) ?? "na")}
+                                    node={rootEvent}
+                                />
+                            ))}
+							{nonOperationEvents.map((currentEvent, index) => {
+                                switch (currentEvent.type) {
 									case "user_message":
 										return (
 											<ChainOfThoughtStep
@@ -88,38 +254,40 @@ export function EventChain({ events }: EventChainProps) {
 												<div className="space-y-3">
 													<div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800/30 dark:bg-blue-950/20">
 														<p className="text-sm leading-relaxed">
-															{event.data.message || event.data.text}
+                                                            {currentEvent.data.message || currentEvent.data.text}
 														</p>
 													</div>
-													{event.data.timestamp && (
+                                                    {currentEvent.data.timestamp && (
 														<div className="flex items-center gap-1 text-muted-foreground text-xs">
 															<ClockIcon className="h-3 w-3" />
-															{formatDistanceToNow(
-																new Date(event.data.timestamp),
-																{ addSuffix: true },
-															)}
+                                                            {formatRelativeTime(currentEvent.data.timestamp)}
 														</div>
 													)}
 												</div>
 											</ChainOfThoughtStep>
 										);
 
-									case "tool_call":
-									case "function_call":
+                                    case "tool_call":
+                                    case "function_call":
 										return (
 											<Tool key={index} defaultOpen={false}>
-												<ToolHeader
-													title={event.data.name || event.data.function_name}
-													type={`tool-${event.type}` as const}
-													state="output-available"
+                                                <ToolHeader
+                                                    title={currentEvent.data.name || currentEvent.data.function_name}
+                                                    type={`tool-${currentEvent.type}` as const}
+                                                    state={
+                                                        (currentEvent.data.status === "in_progress" && "input-streaming") ||
+                                                        (currentEvent.data.status === "succeeded" && "output-available") ||
+                                                        (currentEvent.data.status === "failed" && "output-error") ||
+                                                        "input-available"
+                                                    }
 												/>
 												<ToolContent>
 													<ToolInput
-														input={event.data.arguments || event.data.input}
+                                                        input={currentEvent.data.arguments || currentEvent.data.input}
 													/>
 													<ToolOutput
-														output={event.data.result || event.data.output}
-														errorText={event.data.error}
+                                                        output={currentEvent.data.result || currentEvent.data.output}
+                                                        errorText={currentEvent.data.error}
 													/>
 												</ToolContent>
 											</Tool>
@@ -137,40 +305,42 @@ export function EventChain({ events }: EventChainProps) {
 												<div className="space-y-3">
 													<div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800/30 dark:bg-green-950/20">
 														<p className="text-sm leading-relaxed">
-															{event.data.message || event.data.text}
+                                                            {currentEvent.data.message || currentEvent.data.text}
 														</p>
 													</div>
-													{event.data.timestamp && (
+                                                    {currentEvent.data.timestamp && (
 														<div className="flex items-center gap-1 text-muted-foreground text-xs">
 															<ClockIcon className="h-3 w-3" />
-															{formatDistanceToNow(
-																new Date(event.data.timestamp),
-																{ addSuffix: true },
-															)}
+                                                            {formatRelativeTime(currentEvent.data.timestamp)}
 														</div>
 													)}
 												</div>
 											</ChainOfThoughtStep>
 										);
 
-									case "webhook_processed":
-										return (
+                                    case "webhook_processed":
+                                        return (
 											<ChainOfThoughtStep
 												key={index}
 												label="Webhook Processed"
-												description={`${event.data.payloadType} event processed`}
-												status="complete"
+                                                description={`${currentEvent.data.payloadType} event processed`}
+                                                status={
+                                                    (currentEvent.data.status === "in_progress" && "active") ||
+                                                    (currentEvent.data.status === "succeeded" && "complete") ||
+                                                    (currentEvent.data.status === "failed" && "complete") ||
+                                                    "pending"
+                                                }
 											>
 												<div className="flex items-center gap-2">
 													<Badge variant="secondary" className="text-xs">
-														{event.data.payloadType}
+                                                        {currentEvent.data.payloadType}
 													</Badge>
 													<span className="text-muted-foreground text-xs">
-														{formatDistanceToNow(
-															new Date(event.data.timestamp || Date.now()),
-															{ addSuffix: true },
-														)}
+                                                        {formatRelativeTime(currentEvent.data.timestamp || Date.now())}
 													</span>
+                                                    {currentEvent.data.durationMs && (
+                                                        <span className="text-muted-foreground text-xs">{`${currentEvent.data.durationMs}ms`}</span>
+                                                    )}
 												</div>
 											</ChainOfThoughtStep>
 										);
@@ -178,22 +348,22 @@ export function EventChain({ events }: EventChainProps) {
 									default:
 										return (
 											<Task key={index} defaultOpen={false}>
-												<TaskTrigger title={`${event.type} Event`}>
+                                                <TaskTrigger title={`${currentEvent.type} Event`}>
 													<div className="flex items-center gap-2">
 														<Badge variant="outline" className="text-xs">
-															{event.type}
+                                                            {currentEvent.type}
 														</Badge>
 														<span className="text-muted-foreground text-xs">
-															{new Date(
-																event.data.timestamp || Date.now(),
-															).toLocaleTimeString()}
+                                                            {new Date(
+                                                                currentEvent.data.timestamp || Date.now(),
+                                                            ).toLocaleTimeString()}
 														</span>
 													</div>
 												</TaskTrigger>
 												<TaskContent>
 													<TaskItem>
 														<pre className="overflow-x-auto rounded-lg border bg-muted p-3 text-xs">
-															{JSON.stringify(event.data, null, 2)}
+                                                            {JSON.stringify(currentEvent.data, null, 2)}
 														</pre>
 													</TaskItem>
 												</TaskContent>

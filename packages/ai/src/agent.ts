@@ -22,6 +22,7 @@ import {
 	validateMathematicalExpression,
 } from "./tools/calculator";
 import { threadToPrompt } from "./utils";
+import { startOperation, succeedOperation, failOperation } from "./sync";
 
 // Define specific kwargs types for known function handlers
 type VercelDeploymentKwargs = {
@@ -84,7 +85,7 @@ const getEmailFromThread = (thread: Thread): string | null => {
 
 const appendResult = async (
 	thread: Thread,
-	fn: () => Promise<Record<string, unknown>>,
+	computeResult: () => Promise<Record<string, unknown>>,
 ): Promise<Thread> => {
 	const lastEvent: Event | undefined = thread.events.slice(-1)[0];
 	if (!lastEvent) {
@@ -103,16 +104,16 @@ const appendResult = async (
 		return thread;
 	}
 	try {
-		const result = await fn();
+		const result = await computeResult();
 		thread.events.push({
 			type: responseType,
 			data: result,
 		});
-	} catch (e) {
-		console.error(e);
+	} catch (error) {
+		console.error(error);
 		const errorEvent = await b.SquashResponseContext(
 			threadToPrompt(thread),
-			`error running ${thread.events.slice(-1)[0]?.type}: ${e}`,
+			`error running ${thread.events.slice(-1)[0]?.type}: ${error}`,
 		);
 		thread.events.push({
 			type: "error",
@@ -132,10 +133,17 @@ const _handleNextStep = async (
 		| Await,
 	stateId?: string,
 ): Promise<Thread | false> => {
-	thread.events.push({
-		type: nextStep.intent,
-		data: nextStep,
-	});
+    thread.events.push({
+        type: nextStep.intent,
+        data: nextStep,
+    });
+    let aiStepOp: string | undefined;
+    if (stateId) {
+        aiStepOp = startOperation(stateId, "ai_step", "ai.determine_next_step", {
+            source: "ai",
+            payload: nextStep,
+        });
+    }
 	let currentStateId: string | null = null;
 	switch (nextStep.intent) {
 		case "done_for_now": {
@@ -146,7 +154,6 @@ const _handleNextStep = async (
 				stateId,
 			);
 
-			// Get email address from thread
 			const emailAddress = getEmailFromThread(thread);
 			if (!emailAddress) {
 				console.error("No email address found in thread for contact");
@@ -157,7 +164,6 @@ const _handleNextStep = async (
 				return false;
 			}
 
-			// Send human contact via email
 			const contactDelivery = await createHumanContact(
 				nextStep.message,
 				{
@@ -169,13 +175,15 @@ const _handleNextStep = async (
 				currentStateId,
 			);
 
-			// Add contact delivery result to thread events
 			thread.events.push({
 				type: "human_contact_sent",
 				data: contactDelivery,
 			});
 
-			console.log(`Task completed - ${nextStep.message}`);
+            if (stateId && aiStepOp) {
+                succeedOperation(stateId, "ai_step", aiStepOp, { result: { message: nextStep.message } });
+            }
+            console.log(`Task completed - ${nextStep.message}`);
 			return false;
 		}
 
@@ -187,7 +195,6 @@ const _handleNextStep = async (
 				stateId,
 			);
 
-			// Get email address from thread
 			const emailAddress = getEmailFromThread(thread);
 			if (!emailAddress) {
 				console.error("No email address found in thread for contact");
@@ -198,7 +205,6 @@ const _handleNextStep = async (
 				return false;
 			}
 
-			// Send human contact via email
 			const contactDelivery = await createHumanContact(
 				nextStep.message,
 				{
@@ -210,13 +216,15 @@ const _handleNextStep = async (
 				currentStateId,
 			);
 
-			// Add contact delivery result to thread events
 			thread.events.push({
 				type: "human_contact_sent",
 				data: contactDelivery,
 			});
 
-			console.log(`Requesting clarification - ${nextStep.message}`);
+            if (stateId && aiStepOp) {
+                succeedOperation(stateId, "ai_step", aiStepOp, { result: { message: nextStep.message } });
+            }
+            console.log(`Requesting clarification - ${nextStep.message}`);
 			return false;
 		}
 
@@ -245,9 +253,25 @@ const _handleNextStep = async (
 
 		case "calculate":
 			return await appendResult(thread, async () => {
-				// Validate the expression first
+			let toolOperationId: string | undefined;
+                if (stateId) {
+					toolOperationId = startOperation(stateId, "tool_call", "tool.calculate", {
+						source: "tool",
+						parentOperationId: aiStepOp,
+						payload: { expression: nextStep.expression },
+					});
+				}
 				const validation = validateMathematicalExpression(nextStep.expression);
 				if (!validation.isValid) {
+					if (stateId && toolOperationId) {
+                        failOperation(
+							stateId,
+							"tool_call",
+							toolOperationId,
+							validation.error || "invalid expression",
+                            { parentOperationId: aiStepOp, name: "tool.calculate", source: "tool" },
+						);
+					}
 					return {
 						expression: nextStep.expression,
 						result: 0,
@@ -256,7 +280,6 @@ const _handleNextStep = async (
 					};
 				}
 
-				// Perform the calculation
 				const calculationResult = evaluateExpression(nextStep.expression);
 
 				const result = {
@@ -267,17 +290,28 @@ const _handleNextStep = async (
 					explanation: nextStep.explanation,
 				};
 
-				return {
+				const resultObj = {
 					...result,
 					formatted: formatCalculationResult(calculationResult),
 				};
+				if (stateId && toolOperationId) {
+					succeedOperation(stateId, "tool_call", toolOperationId, { result: resultObj });
+				}
+                if (stateId && aiStepOp) {
+                    succeedOperation(stateId, "ai_step", aiStepOp, { result: resultObj });
+				}
+                return resultObj;
 			});
 
 		default:
-			thread.events.push({
-				type: "error",
-				data: `you called a tool that is not implemented: ${(nextStep as any).intent}, something is wrong with your internal programming, please get help from a human`,
-			});
+			const errorMessage = `you called a tool that is not implemented: ${(nextStep as any).intent}, something is wrong with your internal programming, please get help from a human`;
+            thread.events.push({
+                type: "error",
+				data: errorMessage,
+            });
+            if (stateId && aiStepOp) {
+				failOperation(stateId, "ai_step", aiStepOp, errorMessage);
+            }
 			return thread;
 	}
 };
@@ -305,7 +339,6 @@ export const handleNextStep = async (
 	}
 };
 
-// Helper functions for handling different payload types
 const handleHumanContactCompleted = async (
 	thread: Thread,
 	payload: HumanContactCompleted,
@@ -324,7 +357,6 @@ const handleFunctionCallCompleted = async (
 	payload: FunctionCallCompleted,
 	stateId?: string,
 ): Promise<void> => {
-	// Handle rejection
 	if (!payload.event.status?.approved) {
 		thread.events.push({
 			type: "human_response",
@@ -341,7 +373,6 @@ const handleFunctionCallCompleted = async (
 		return await handleNextStep(updatedThread, stateId);
 	}
 
-	// Unknown function
 	thread.events.push({
 		type: "error",
 		data: `Unknown intent: ${payload.event.spec.fn}`,
