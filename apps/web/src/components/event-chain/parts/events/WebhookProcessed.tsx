@@ -1,22 +1,36 @@
 "use client";
 
-import type { ReactElement } from "react";
 import type { Event } from "@hitl/ai/schemas";
-import { Badge } from "@/components/ui/badge";
+import type { ReactElement } from "react";
 import { ChainOfThoughtStep } from "@/components/ai-elements/chain-of-thought";
+import { Badge } from "@/components/ui/badge";
 import { formatRelativeTime } from "../utils";
 
-export function WebhookProcessedContent({ event }: { event: Event }): ReactElement {
+export function WebhookProcessedContent({
+	event,
+}: {
+	event: Event;
+}): ReactElement {
 	return (
 		<div className="flex items-center gap-2">
-			<Badge variant="secondary" className="text-xs">{(event.data as any).payloadType}</Badge>
-			<span className="text-muted-foreground text-xs">{formatRelativeTime((event.data as any).timestamp || Date.now())}</span>
-			{(event.data as any).durationMs && <span className="text-muted-foreground text-xs">{`${(event.data as any).durationMs}ms`}</span>}
+			<Badge variant="secondary" className="text-xs">
+				{(event.data as any).payloadType}
+			</Badge>
+			<span className="text-muted-foreground text-xs">
+				{formatRelativeTime((event.data as any).timestamp || Date.now())}
+			</span>
+			{(event.data as any).durationMs && (
+				<span className="text-muted-foreground text-xs">{`${(event.data as any).durationMs}ms`}</span>
+			)}
 		</div>
 	);
 }
 
-export function WebhookProcessedStep({ event }: { event: Event }): ReactElement {
+export function WebhookProcessedStep({
+	event,
+}: {
+	event: Event;
+}): ReactElement {
 	return (
 		<ChainOfThoughtStep
 			label="Webhook Processed"

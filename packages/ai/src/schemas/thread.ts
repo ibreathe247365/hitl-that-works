@@ -40,63 +40,67 @@ export const RequestMoreInformationEventSchema = z.object({
 
 export const UserMessageEventSchema = z.object({
 	type: z.literal("user_message"),
-    data: MessagePayloadSchema,
+	data: MessagePayloadSchema,
 });
 
 export const AIResponseEventSchema = z.object({
 	type: z.literal("ai_response"),
-    data: MessagePayloadSchema,
+	data: MessagePayloadSchema,
 });
 
 export const AssistantMessageEventSchema = z.object({
 	type: z.literal("assistant_message"),
-    data: MessagePayloadSchema,
+	data: MessagePayloadSchema,
 });
 
 export const ToolCallEventSchema = z.object({
 	type: z.literal("tool_call"),
-    data: z
-        .object({
-            name: z.string().optional(),
-            arguments: z.any().optional(),
-            input: z.any().optional(),
-        })
-        .extend(CallResultShape)
-        .extend(OperationMetadataShape),
+	data: z
+		.object({
+			name: z.string().optional(),
+			arguments: z.any().optional(),
+			input: z.any().optional(),
+		})
+		.extend(CallResultShape)
+		.extend(OperationMetadataShape),
 });
 
 export const FunctionCallEventSchema = z.object({
 	type: z.literal("function_call"),
-    data: z
-        .object({
-            function_name: z.string().optional(),
-            name: z.string().optional(),
-            arguments: z.any().optional(),
-            input: z.any().optional(),
-        })
-        .extend(CallResultShape)
-        .extend(OperationMetadataShape),
+	data: z
+		.object({
+			function_name: z.string().optional(),
+			name: z.string().optional(),
+			arguments: z.any().optional(),
+			input: z.any().optional(),
+		})
+		.extend(CallResultShape)
+		.extend(OperationMetadataShape),
 });
 
 export const WebhookProcessedEventSchema = z.object({
 	type: z.literal("webhook_processed"),
-    data: z
-        .object({
-            payloadType: z.string(),
-            timestamp: z.string().optional(),
-        })
-        .extend(OperationMetadataShape)
-        .extend({
-            result: z.any().optional(),
-            error: z
-                .object({ message: z.string(), stack: z.string().optional(), code: z.string().optional() })
-                .optional(),
-        }),
+	data: z
+		.object({
+			payloadType: z.string(),
+			timestamp: z.string().optional(),
+		})
+		.extend(OperationMetadataShape)
+		.extend({
+			result: z.any().optional(),
+			error: z
+				.object({
+					message: z.string(),
+					stack: z.string().optional(),
+					code: z.string().optional(),
+				})
+				.optional(),
+		}),
 });
 
 export const GenericEventSchema = z.object({
 	type: z.string(),
-    data: z.any(),
+	data: z.any(),
 });
 
 export const EventSchema = z.union([

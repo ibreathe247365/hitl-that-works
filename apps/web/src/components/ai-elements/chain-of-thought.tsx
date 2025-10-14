@@ -198,10 +198,8 @@ export const ChainOfThoughtContent = memo(
 					{...props}
 				>
 					<div className="relative pl-6">
-						<div className="absolute left-3 top-0 bottom-0 w-px bg-border" />
-						<div className="space-y-3">
-							{children}
-						</div>
+						<div className="absolute top-0 bottom-0 left-3 w-px bg-border" />
+						<div className="space-y-3">{children}</div>
 					</div>
 				</CollapsibleContent>
 			</Collapsible>

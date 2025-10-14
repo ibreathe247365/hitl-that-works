@@ -1,8 +1,14 @@
 "use client";
 
-import type { ReactElement } from "react";
 import type { Event } from "@hitl/ai/schemas";
-import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "@/components/ai-elements/tool";
+import type { ReactElement } from "react";
+import {
+	Tool,
+	ToolContent,
+	ToolHeader,
+	ToolInput,
+	ToolOutput,
+} from "@/components/ai-elements/tool";
 
 export function ToolCallContent({ event }: { event: Event }): ReactElement {
 	return (
@@ -18,8 +24,13 @@ export function ToolCallContent({ event }: { event: Event }): ReactElement {
 				}
 			/>
 			<ToolContent>
-				<ToolInput input={(event.data as any).arguments || (event.data as any).input} />
-				<ToolOutput output={(event.data as any).result || (event.data as any).output} errorText={(event.data as any).error} />
+				<ToolInput
+					input={(event.data as any).arguments || (event.data as any).input}
+				/>
+				<ToolOutput
+					output={(event.data as any).result || (event.data as any).output}
+					errorText={(event.data as any).error}
+				/>
 			</ToolContent>
 		</Tool>
 	);

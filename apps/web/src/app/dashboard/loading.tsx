@@ -1,5 +1,5 @@
-import { ThreadGridSkeleton } from "@/components/skeletons/thread-list";
 import { SidebarSkeleton } from "@/components/skeletons/sidebar";
+import { ThreadGridSkeleton } from "@/components/skeletons/thread-list";
 
 export default function Loading() {
 	return (
@@ -16,5 +16,3 @@ export default function Loading() {
 		</div>
 	);
 }
-
-

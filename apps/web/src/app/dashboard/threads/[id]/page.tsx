@@ -9,11 +9,11 @@ import { EventChain } from "@/components/event-chain";
 import { MessageInput } from "@/components/message-input";
 import { RedisStatePanel } from "@/components/redis-state-panel";
 import { Horizontal } from "@/components/resizable-panels";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ThreadDetailHeaderSkeleton } from "@/components/skeletons/thread-header";
 import { EventChainSkeleton } from "@/components/skeletons/event-chain";
 import { RedisStatePanelSkeleton } from "@/components/skeletons/redis-panel";
+import { ThreadDetailHeaderSkeleton } from "@/components/skeletons/thread-header";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default function ThreadDetailPage() {
 	const params = useParams();
@@ -80,7 +80,7 @@ export default function ThreadDetailPage() {
 					variant="ghost"
 					size="sm"
 					onClick={() => router.push("/dashboard")}
-					className="-ml-2 flex rounded-full items-center gap-2 hover:bg-muted/50"
+					className="-ml-2 flex items-center gap-2 rounded-full hover:bg-muted/50"
 				>
 					<ArrowLeftIcon className="h-4 w-4" />
 				</Button>
@@ -146,7 +146,6 @@ export default function ThreadDetailPage() {
 										addSuffix: true,
 									})}
 								</span>
-								
 							</div>
 						</div>
 					</div>

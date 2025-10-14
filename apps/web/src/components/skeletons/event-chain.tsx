@@ -36,5 +36,3 @@ export function EventChainSkeleton({ count = 5 }: EventChainSkeletonProps) {
 		</div>
 	);
 }
-
-

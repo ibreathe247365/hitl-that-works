@@ -28,14 +28,14 @@ export async function processMessage(
 ): Promise<ProcessMessageResult> {
 	const { webhookPayload, stateId, userId, source } = options;
 
-    const jobId = await enqueueWebhookProcessing(webhookPayload, stateId, userId);
+	const jobId = await enqueueWebhookProcessing(webhookPayload, stateId, userId);
 
-    if (stateId) {
-        startOperation(stateId, "webhook", "webhook.received", {
-            source: "webhook",
-            payload: { jobId, source, payloadType: webhookPayload.type },
-        });
-    }
+	if (stateId) {
+		startOperation(stateId, "webhook", "webhook.received", {
+			source: "webhook",
+			payload: { jobId, source, payloadType: webhookPayload.type },
+		});
+	}
 
 	return {
 		jobId,

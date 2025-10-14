@@ -4,7 +4,6 @@ import { api } from "@hitl/backend/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { ListIcon, PlusIcon, UserIcon } from "lucide-react";
 import Link from "next/link";
-import { Logo } from "./logo";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,13 +14,13 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { authClient } from "@/lib/auth-client";
+import { Logo } from "./logo";
 import { ModeToggle } from "./mode-toggle";
 
 export function Sidebar() {
 	const router = useRouter();
 	const user = useQuery(api.auth.getCurrentUser);
 	const addEventMutation = useMutation(api.threads.addEvent);
-
 
 	const handleCreateThread = async () => {
 		const stateId = `thread_${Date.now()}_${Math.random().toString(36).substring(7)}`;
@@ -62,7 +61,7 @@ export function Sidebar() {
 			<Button
 				variant="ghost"
 				size="icon"
-				onClick={()=>router.push("/dashboard")}
+				onClick={() => router.push("/dashboard")}
 				className="h-10 w-10 rounded-full transition-colors hover:bg-primary/10 hover:text-primary"
 				title="View all threads"
 			>

@@ -1,6 +1,12 @@
 import type { QueueJobData } from "@hitl/ai";
-import { getThreadState, handleHumanResponse, saveThreadState } from "@hitl/ai";
-import { failOperation, startOperation, succeedOperation } from "@hitl/ai";
+import {
+	failOperation,
+	getThreadState,
+	handleHumanResponse,
+	saveThreadState,
+	startOperation,
+	succeedOperation,
+} from "@hitl/ai";
 import { inngest } from "@/lib/inngest";
 
 export const processWebhook = inngest.createFunction(
@@ -27,7 +33,10 @@ export const processWebhook = inngest.createFunction(
 		let startedAt: string | undefined;
 		if (threadStateId) {
 			startedAt = new Date().toISOString();
-			startOperation(threadStateId, "queue", "webhook.process", { source: "queue", operationId });
+			startOperation(threadStateId, "queue", "webhook.process", {
+				source: "queue",
+				operationId,
+			});
 		}
 
 		try {
@@ -37,12 +46,21 @@ export const processWebhook = inngest.createFunction(
 				threadStateId,
 			);
 			if (threadStateId && operationId) {
-				succeedOperation(threadStateId, "queue", operationId, { result: { ok: true }, startedAt, name: "webhook.process", source: "queue" });
+				succeedOperation(threadStateId, "queue", operationId, {
+					result: { ok: true },
+					startedAt,
+					name: "webhook.process",
+					source: "queue",
+				});
 			}
 			return { ok: true };
 		} catch (err) {
 			if (threadStateId && operationId) {
-				failOperation(threadStateId, "queue", operationId, err, { startedAt, name: "webhook.process", source: "queue" });
+				failOperation(threadStateId, "queue", operationId, err, {
+					startedAt,
+					name: "webhook.process",
+					source: "queue",
+				});
 			}
 			throw err;
 		}

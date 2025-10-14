@@ -1,6 +1,6 @@
-import { ThreadDetailHeaderSkeleton } from "@/components/skeletons/thread-header";
 import { EventChainSkeleton } from "@/components/skeletons/event-chain";
 import { RedisStatePanelSkeleton } from "@/components/skeletons/redis-panel";
+import { ThreadDetailHeaderSkeleton } from "@/components/skeletons/thread-header";
 
 export default function Loading() {
 	return (
@@ -17,5 +17,3 @@ export default function Loading() {
 		</div>
 	);
 }
-
-

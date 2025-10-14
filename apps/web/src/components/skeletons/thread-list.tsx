@@ -29,5 +29,3 @@ export function ThreadGridSkeleton({ count = 12 }: ThreadGridSkeletonProps) {
 		</div>
 	);
 }
-
-

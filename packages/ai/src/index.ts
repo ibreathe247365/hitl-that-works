@@ -36,10 +36,10 @@ export * from "./queue";
 export * from "./schemas";
 export * from "./state";
 export {
-    addThreadEvent,
-    syncLatestEventToConvex,
-    queueOperation,
-    startOperation,
-    succeedOperation,
-    failOperation,
+	addThreadEvent,
+	failOperation,
+	queueOperation,
+	startOperation,
+	succeedOperation,
+	syncLatestEventToConvex,
 } from "./sync";

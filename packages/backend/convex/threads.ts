@@ -43,27 +43,27 @@ export const addEvent = mutation({
 });
 
 export const updateEvent = mutation({
-    args: {
-        stateId: v.string(),
-        operationId: v.string(),
-        patch: v.any(),
-    },
-    handler: async (ctx, args) => {
-        const events = await ctx.db
-            .query("events")
-            .withIndex("by_state_created", (q) => q.eq("stateId", args.stateId))
-            .collect();
+	args: {
+		stateId: v.string(),
+		operationId: v.string(),
+		patch: v.any(),
+	},
+	handler: async (ctx, args) => {
+		const events = await ctx.db
+			.query("events")
+			.withIndex("by_state_created", (q) => q.eq("stateId", args.stateId))
+			.collect();
 
-        for (let i = events.length - 1; i >= 0; i--) {
-            const ev = events[i] as any;
-            if (ev?.data?.operationId === args.operationId) {
-                const merged = { ...ev.data, ...args.patch };
-                await ctx.db.patch(ev._id, { data: merged });
-                return { updated: true };
-            }
-        }
-        return { updated: false };
-    },
+		for (let i = events.length - 1; i >= 0; i--) {
+			const ev = events[i] as any;
+			if (ev?.data?.operationId === args.operationId) {
+				const merged = { ...ev.data, ...args.patch };
+				await ctx.db.patch(ev._id, { data: merged });
+				return { updated: true };
+			}
+		}
+		return { updated: false };
+	},
 });
 
 export const getThread = query({

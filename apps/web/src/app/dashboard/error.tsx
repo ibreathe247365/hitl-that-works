@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
 export default function Error({
 	error,
 	reset,
 }: {
-error: Error;
+	error: Error;
 	reset: () => void;
 }) {
 	return (
@@ -14,15 +14,13 @@ error: Error;
 					Something went wrong loading the dashboard.
 				</p>
 				<button
-					className="inline-flex h-9 items-center justify-center rounded-md border px-4 text-sm font-medium shadow-sm hover:bg-accent"
+					className="inline-flex h-9 items-center justify-center rounded-md border px-4 font-medium text-sm shadow-sm hover:bg-accent"
 					onClick={() => reset()}
 				>
 					Try again
-                    {JSON.stringify(error)}
+					{JSON.stringify(error)}
 				</button>
 			</div>
 		</div>
 	);
 }
-
-

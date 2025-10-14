@@ -1,5 +1,6 @@
 "use client";
 
+import { LayoutDashboard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -9,10 +10,9 @@ import {
 	PromptInputTextarea,
 	PromptInputToolbar,
 } from "@/components/ai-elements/prompt-input";
-import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
-import { LayoutDashboard } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 function AppPromptInput() {
 	const router = useRouter();
@@ -89,7 +89,8 @@ export default function Home() {
 								HITL = Humans + AI
 							</h1>
 							<p className="text-lg text-white/90 drop-shadow-md">
-								Intelligent AI agents that know when to pause and collaborate with humans.
+								Intelligent AI agents that know when to pause and collaborate
+								with humans.
 							</p>
 						</div>
 
@@ -100,11 +101,9 @@ export default function Home() {
 				</div>
 
 				<div className="-translate-x-1/2 absolute bottom-6 left-1/2 transform text-sm text-white/70 drop-shadow-sm">
-					made with {`<3`} by samir
+					made with {"<3"} by samir
 				</div>
 			</div>
 		</BackgroundGradientAnimation>
 	);
 }
-
-

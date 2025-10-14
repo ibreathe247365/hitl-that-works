@@ -16,13 +16,13 @@ import type {
 	WebhookPayload,
 } from "./schemas";
 import { saveThreadState } from "./state";
+import { failOperation, startOperation, succeedOperation } from "./sync";
 import {
 	evaluateExpression,
 	formatCalculationResult,
 	validateMathematicalExpression,
 } from "./tools/calculator";
 import { threadToPrompt } from "./utils";
-import { startOperation, succeedOperation, failOperation } from "./sync";
 
 // Define specific kwargs types for known function handlers
 type VercelDeploymentKwargs = {
@@ -133,17 +133,17 @@ const _handleNextStep = async (
 		| Await,
 	stateId?: string,
 ): Promise<Thread | false> => {
-    thread.events.push({
-        type: nextStep.intent,
-        data: nextStep,
-    });
-    let aiStepOp: string | undefined;
-    if (stateId) {
-        aiStepOp = startOperation(stateId, "ai_step", "ai.determine_next_step", {
-            source: "ai",
-            payload: nextStep,
-        });
-    }
+	thread.events.push({
+		type: nextStep.intent,
+		data: nextStep,
+	});
+	let aiStepOp: string | undefined;
+	if (stateId) {
+		aiStepOp = startOperation(stateId, "ai_step", "ai.determine_next_step", {
+			source: "ai",
+			payload: nextStep,
+		});
+	}
 	let currentStateId: string | null = null;
 	switch (nextStep.intent) {
 		case "done_for_now": {
@@ -180,10 +180,12 @@ const _handleNextStep = async (
 				data: contactDelivery,
 			});
 
-            if (stateId && aiStepOp) {
-                succeedOperation(stateId, "ai_step", aiStepOp, { result: { message: nextStep.message } });
-            }
-            console.log(`Task completed - ${nextStep.message}`);
+			if (stateId && aiStepOp) {
+				succeedOperation(stateId, "ai_step", aiStepOp, {
+					result: { message: nextStep.message },
+				});
+			}
+			console.log(`Task completed - ${nextStep.message}`);
 			return false;
 		}
 
@@ -221,10 +223,12 @@ const _handleNextStep = async (
 				data: contactDelivery,
 			});
 
-            if (stateId && aiStepOp) {
-                succeedOperation(stateId, "ai_step", aiStepOp, { result: { message: nextStep.message } });
-            }
-            console.log(`Requesting clarification - ${nextStep.message}`);
+			if (stateId && aiStepOp) {
+				succeedOperation(stateId, "ai_step", aiStepOp, {
+					result: { message: nextStep.message },
+				});
+			}
+			console.log(`Requesting clarification - ${nextStep.message}`);
 			return false;
 		}
 
@@ -253,23 +257,32 @@ const _handleNextStep = async (
 
 		case "calculate":
 			return await appendResult(thread, async () => {
-			let toolOperationId: string | undefined;
-                if (stateId) {
-					toolOperationId = startOperation(stateId, "tool_call", "tool.calculate", {
-						source: "tool",
-						parentOperationId: aiStepOp,
-						payload: { expression: nextStep.expression },
-					});
+				let toolOperationId: string | undefined;
+				if (stateId) {
+					toolOperationId = startOperation(
+						stateId,
+						"tool_call",
+						"tool.calculate",
+						{
+							source: "tool",
+							parentOperationId: aiStepOp,
+							payload: { expression: nextStep.expression },
+						},
+					);
 				}
 				const validation = validateMathematicalExpression(nextStep.expression);
 				if (!validation.isValid) {
 					if (stateId && toolOperationId) {
-                        failOperation(
+						failOperation(
 							stateId,
 							"tool_call",
 							toolOperationId,
 							validation.error || "invalid expression",
-                            { parentOperationId: aiStepOp, name: "tool.calculate", source: "tool" },
+							{
+								parentOperationId: aiStepOp,
+								name: "tool.calculate",
+								source: "tool",
+							},
 						);
 					}
 					return {
@@ -295,24 +308,27 @@ const _handleNextStep = async (
 					formatted: formatCalculationResult(calculationResult),
 				};
 				if (stateId && toolOperationId) {
-					succeedOperation(stateId, "tool_call", toolOperationId, { result: resultObj });
+					succeedOperation(stateId, "tool_call", toolOperationId, {
+						result: resultObj,
+					});
 				}
-                if (stateId && aiStepOp) {
-                    succeedOperation(stateId, "ai_step", aiStepOp, { result: resultObj });
+				if (stateId && aiStepOp) {
+					succeedOperation(stateId, "ai_step", aiStepOp, { result: resultObj });
 				}
-                return resultObj;
+				return resultObj;
 			});
 
-		default:
+		default: {
 			const errorMessage = `you called a tool that is not implemented: ${(nextStep as any).intent}, something is wrong with your internal programming, please get help from a human`;
-            thread.events.push({
-                type: "error",
+			thread.events.push({
+				type: "error",
 				data: errorMessage,
-            });
-            if (stateId && aiStepOp) {
+			});
+			if (stateId && aiStepOp) {
 				failOperation(stateId, "ai_step", aiStepOp, errorMessage);
-            }
+			}
 			return thread;
+		}
 	}
 };
 

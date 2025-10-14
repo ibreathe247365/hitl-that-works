@@ -1,10 +1,7 @@
 "use client";
 
 import type { ThreadStateWithMetadata } from "@hitl/ai";
-import {
-	DatabaseIcon,
-	RefreshCwIcon,
-} from "lucide-react";
+import { DatabaseIcon, RefreshCwIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -60,7 +57,7 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 	if (loading) {
 		return (
 			<Card className="h-full">
-				<CardHeader className="pb-1 pt-1">
+				<CardHeader className="pt-1 pb-1">
 					<CardTitle className="flex items-center gap-2 text-base">
 						<DatabaseIcon className="h-4 w-4 text-primary" />
 						Agent context
@@ -69,7 +66,9 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 				<CardContent className="flex flex-1 items-center justify-center">
 					<div className="py-8 text-center">
 						<div className="mx-auto mb-3 h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-						<p className="text-muted-foreground text-sm">Loading Agent context...</p>
+						<p className="text-muted-foreground text-sm">
+							Loading Agent context...
+						</p>
 					</div>
 				</CardContent>
 			</Card>
@@ -79,7 +78,7 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 	if (error) {
 		return (
 			<Card className="h-full">
-				<CardHeader className="pb-1 pt-1">
+				<CardHeader className="pt-1 pb-1">
 					<CardTitle className="flex items-center gap-2 text-base">
 						<DatabaseIcon className="h-4 w-4 text-primary" />
 						Agent context
@@ -122,7 +121,7 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 	if (!state) {
 		return (
 			<Card className="h-full">
-				<CardHeader className="pb-1 pt-1">
+				<CardHeader className="pt-1 pb-1">
 					<CardTitle className="flex items-center gap-2 text-base">
 						<DatabaseIcon className="h-4 w-4 text-primary" />
 						Agent context
@@ -133,7 +132,9 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 						<div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
 							<DatabaseIcon className="h-6 w-6 text-muted-foreground" />
 						</div>
-						<h3 className="mb-2 font-semibold text-base">No Agent context found</h3>
+						<h3 className="mb-2 font-semibold text-base">
+							No Agent context found
+						</h3>
 						<p className="text-muted-foreground text-sm">
 							This thread doesn't have any Agent context data yet.
 						</p>
@@ -158,20 +159,26 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 						disabled={isRefetching}
 						className="h-7 w-7 p-0"
 					>
-						<RefreshCwIcon className={`h-3.5 w-3.5 ${isRefetching ? 'animate-spin' : ''}`} />
+						<RefreshCwIcon
+							className={`h-3.5 w-3.5 ${isRefetching ? "animate-spin" : ""}`}
+						/>
 					</Button>
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="min-h-0 flex-1 p-0">
-				<Tabs defaultValue="pretty" className="h-full flex flex-col">
+				<Tabs defaultValue="pretty" className="flex h-full flex-col">
 					<div className="px-4 pt-2 pb-1">
-						<TabsList className="grid w-full grid-cols-2 h-8">
-							<TabsTrigger value="pretty" className="text-xs">Pretty</TabsTrigger>
-							<TabsTrigger value="raw" className="text-xs">RAW</TabsTrigger>
+						<TabsList className="grid h-8 w-full grid-cols-2">
+							<TabsTrigger value="pretty" className="text-xs">
+								Pretty
+							</TabsTrigger>
+							<TabsTrigger value="raw" className="text-xs">
+								RAW
+							</TabsTrigger>
 						</TabsList>
 					</div>
-					
-					<TabsContent value="pretty" className="flex-1 min-h-0 mt-0">
+
+					<TabsContent value="pretty" className="mt-0 min-h-0 flex-1">
 						<ScrollArea className="h-full px-4 pb-4">
 							<div className="space-y-3">
 								<div className="space-y-2">
@@ -180,9 +187,15 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 									</h4>
 									<div className="space-y-2">
 										{state.thread.events.map((event, index) => (
-											<div key={index} className="rounded-md border bg-card p-2">
+											<div
+												key={index}
+												className="rounded-md border bg-card p-2"
+											>
 												<div className="mb-2 flex items-center gap-2">
-													<Badge variant="outline" className="text-xs px-1.5 py-0.5">
+													<Badge
+														variant="outline"
+														className="px-1.5 py-0.5 text-xs"
+													>
 														{event.type}
 													</Badge>
 												</div>
@@ -210,8 +223,8 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 							</div>
 						</ScrollArea>
 					</TabsContent>
-					
-					<TabsContent value="raw" className="flex-1 min-h-0 mt-0">
+
+					<TabsContent value="raw" className="mt-0 min-h-0 flex-1">
 						<ScrollArea className="h-full px-4 pb-4">
 							<div className="space-y-2">
 								<h4 className="font-medium text-foreground text-xs">

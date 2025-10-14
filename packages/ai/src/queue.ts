@@ -15,7 +15,7 @@ export interface QueueJobData {
 	threadStateId?: string;
 	userId?: string;
 	timestamp: string;
-    operationId?: string;
+	operationId?: string;
 }
 
 /**
@@ -30,19 +30,19 @@ export async function enqueueWebhookProcessing(
 	threadStateId?: string,
 	userId?: string,
 ): Promise<string> {
-    let operationId: string | undefined;
-    if (threadStateId) {
-        operationId = queueOperation(threadStateId, "queue", "webhook.process", {
-            payload: webhookPayload,
-            source: "queue",
-        });
-    }
+	let operationId: string | undefined;
+	if (threadStateId) {
+		operationId = queueOperation(threadStateId, "queue", "webhook.process", {
+			payload: webhookPayload,
+			source: "queue",
+		});
+	}
 	const jobData: QueueJobData = {
 		webhookPayload,
 		threadStateId,
 		userId,
 		timestamp: new Date().toISOString(),
-        operationId,
+		operationId,
 	};
 
 	const result = await inngest.send({

@@ -5,10 +5,10 @@ import { useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { ThreadGridSkeleton } from "@/components/skeletons/thread-list";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ThreadGridSkeleton } from "@/components/skeletons/thread-list";
-import { toast } from "sonner";
 
 export default function ThreadListPage() {
 	const threads = useQuery(api.threads.getThreads);
@@ -93,64 +93,64 @@ export default function ThreadListPage() {
 				</div>
 
 				<div className="no-scrollbar flex-1 overflow-y-auto pb-8">
-					<div className="p-1 grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-					{threads.map((thread) => {
-						const isHighlighted = highlightedThreadId === thread.stateId;
-						return (
-							<Card
-								key={thread.stateId}
-								className={`group cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${
-									isHighlighted ? "scale-[1.02] shadow-lg" : ""
-								}`}
-								onClick={() =>
-									router.push(`/dashboard/threads/${thread.stateId}`)
-								}
-								style={
-									isHighlighted
-										? {
-												background:
-													"linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.05) 50%, rgba(59, 130, 246, 0.1) 100%)",
-											}
-										: undefined
-								}
-							>
-								<CardHeader className="pb-3">
-									<div className="flex items-center justify-between">
-										<CardTitle className="truncate font-semibold text-base transition-colors group-hover:text-primary">
-											Thread {thread.stateId.slice(-8)}
-										</CardTitle>
-										<Badge
-											variant="secondary"
-											className="flex-shrink-0 text-xs"
-										>
-											{thread.initialEmail ? "Email" : "Chat"}
-										</Badge>
-									</div>
-								</CardHeader>
-								<CardContent className="pt-0">
-									<div className="space-y-3 text-muted-foreground text-sm">
-										<div className="flex items-center gap-2">
-											<div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
-											<span>
-												Updated{" "}
-												{formatDistanceToNow(new Date(thread.updatedAt), {
-													addSuffix: true,
-												})}
-											</span>
+					<div className="grid gap-6 p-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+						{threads.map((thread) => {
+							const isHighlighted = highlightedThreadId === thread.stateId;
+							return (
+								<Card
+									key={thread.stateId}
+									className={`group cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${
+										isHighlighted ? "scale-[1.02] shadow-lg" : ""
+									}`}
+									onClick={() =>
+										router.push(`/dashboard/threads/${thread.stateId}`)
+									}
+									style={
+										isHighlighted
+											? {
+													background:
+														"linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.05) 50%, rgba(59, 130, 246, 0.1) 100%)",
+												}
+											: undefined
+									}
+								>
+									<CardHeader className="pb-3">
+										<div className="flex items-center justify-between">
+											<CardTitle className="truncate font-semibold text-base transition-colors group-hover:text-primary">
+												Thread {thread.stateId.slice(-8)}
+											</CardTitle>
+											<Badge
+												variant="secondary"
+												className="flex-shrink-0 text-xs"
+											>
+												{thread.initialEmail ? "Email" : "Chat"}
+											</Badge>
 										</div>
-										{thread.initialEmail && (
-											<div className="truncate text-xs">
-												<span className="font-medium">From:</span>{" "}
-												{typeof thread.initialEmail === "string"
-													? thread.initialEmail
-													: "Email thread"}
+									</CardHeader>
+									<CardContent className="pt-0">
+										<div className="space-y-3 text-muted-foreground text-sm">
+											<div className="flex items-center gap-2">
+												<div className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />
+												<span>
+													Updated{" "}
+													{formatDistanceToNow(new Date(thread.updatedAt), {
+														addSuffix: true,
+													})}
+												</span>
 											</div>
-										)}
-									</div>
-								</CardContent>
-							</Card>
-						);
-					})}
+											{thread.initialEmail && (
+												<div className="truncate text-xs">
+													<span className="font-medium">From:</span>{" "}
+													{typeof thread.initialEmail === "string"
+														? thread.initialEmail
+														: "Email thread"}
+												</div>
+											)}
+										</div>
+									</CardContent>
+								</Card>
+							);
+						})}
 					</div>
 				</div>
 			</div>

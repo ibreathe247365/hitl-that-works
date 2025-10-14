@@ -57,7 +57,6 @@ export function MessageInput({ stateId, onMessageSent }: MessageInputProps) {
 	return (
 		<div className="px-6 py-4">
 			<div className="mx-auto max-w-4xl">
-				
 				<PromptInput onSubmit={handleSubmit}>
 					<PromptInputBody>
 						<PromptInputTextarea
