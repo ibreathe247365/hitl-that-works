@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ThreadGridSkeleton } from "@/components/skeletons/thread-list";
+import { toast } from "sonner";
 
 export default function ThreadListPage() {
 	const threads = useQuery(api.threads.getThreads);
@@ -36,11 +38,10 @@ export default function ThreadListPage() {
 					if (response.ok) {
 						const result = await response.json();
 						sessionStorage.removeItem("pendingMessage");
+						toast.success("Created a new thread");
 
-						// Highlight the newly created thread instead of navigating
 						setHighlightedThreadId(result.data.stateId);
 
-						// Remove highlight after 3 seconds
 						setTimeout(() => {
 							setHighlightedThreadId(null);
 						}, 3000);
@@ -57,8 +58,16 @@ export default function ThreadListPage() {
 
 	if (threads === undefined) {
 		return (
-			<div className="p-6">
-				<div className="text-center">Loading threads...</div>
+			<div className="h-full bg-background">
+				<div className="container mx-auto flex h-full flex-col px-6">
+					<div className="sticky top-0 z-10 bg-background/95 py-8 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+						<div className="h-8 w-48 rounded-md bg-muted" />
+						<div className="mt-2 h-5 w-32 rounded-md bg-muted" />
+					</div>
+					<div className="no-scrollbar flex-1 overflow-y-auto pb-8">
+						<ThreadGridSkeleton count={5} />
+					</div>
+				</div>
 			</div>
 		);
 	}
@@ -74,16 +83,17 @@ export default function ThreadListPage() {
 	}
 
 	return (
-		<div className="min-h-screen bg-background">
-			<div className="container mx-auto px-6 py-8">
-				<div className="mb-8">
+		<div className="h-full bg-background">
+			<div className="container mx-auto flex h-full flex-col px-2">
+				<div className="sticky top-0 z-10 bg-background/95 py-8 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 					<h1 className="mb-2 font-bold text-3xl">Your Threads</h1>
 					<p className="text-lg text-muted-foreground">
 						{threads.length} thread{threads.length !== 1 ? "s" : ""} total
 					</p>
 				</div>
 
-				<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+				<div className="no-scrollbar flex-1 overflow-y-auto pb-8">
+					<div className="p-1 grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 					{threads.map((thread) => {
 						const isHighlighted = highlightedThreadId === thread.stateId;
 						return (
@@ -120,16 +130,7 @@ export default function ThreadListPage() {
 								<CardContent className="pt-0">
 									<div className="space-y-3 text-muted-foreground text-sm">
 										<div className="flex items-center gap-2">
-											<div className="h-1.5 w-1.5 rounded-full bg-green-500" />
-											<span>
-												Created{" "}
-												{formatDistanceToNow(new Date(thread.createdAt), {
-													addSuffix: true,
-												})}
-											</span>
-										</div>
-										<div className="flex items-center gap-2">
-											<div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+											<div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
 											<span>
 												Updated{" "}
 												{formatDistanceToNow(new Date(thread.updatedAt), {
@@ -150,6 +151,7 @@ export default function ThreadListPage() {
 							</Card>
 						);
 					})}
+					</div>
 				</div>
 			</div>
 		</div>

@@ -11,6 +11,9 @@ import { RedisStatePanel } from "@/components/redis-state-panel";
 import { Horizontal } from "@/components/resizable-panels";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ThreadDetailHeaderSkeleton } from "@/components/skeletons/thread-header";
+import { EventChainSkeleton } from "@/components/skeletons/event-chain";
+import { RedisStatePanelSkeleton } from "@/components/skeletons/redis-panel";
 
 export default function ThreadDetailPage() {
 	const params = useParams();
@@ -29,20 +32,13 @@ export default function ThreadDetailPage() {
 	if (thread === undefined) {
 		return (
 			<div className="flex h-screen flex-col bg-background">
-				<div className="flex items-center gap-4 border-b bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => router.push("/dashboard")}
-						className="flex items-center gap-2 hover:bg-muted/50"
-					>
-						<ArrowLeftIcon className="h-4 w-4" />
-					</Button>
-				</div>
-				<div className="flex flex-1 items-center justify-center">
-					<div className="text-center">
-						<div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-						<p className="text-muted-foreground">Loading thread...</p>
+				<ThreadDetailHeaderSkeleton />
+				<div className="flex flex-1 gap-4 p-4">
+					<div className="hidden h-full min-w-0 flex-1 lg:block">
+						<EventChainSkeleton />
+					</div>
+					<div className="h-full min-w-0 flex-1 lg:w-2/5">
+						<RedisStatePanelSkeleton />
 					</div>
 				</div>
 			</div>
@@ -79,16 +75,14 @@ export default function ThreadDetailPage() {
 
 	return (
 		<div className="flex h-screen flex-col bg-background">
-			{/* Header */}
 			<div className="flex items-center gap-4 border-b bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 				<Button
 					variant="ghost"
 					size="sm"
 					onClick={() => router.push("/dashboard")}
-					className="-ml-2 flex items-center gap-2 hover:bg-muted/50"
+					className="-ml-2 flex rounded-full items-center gap-2 hover:bg-muted/50"
 				>
 					<ArrowLeftIcon className="h-4 w-4" />
-					<span className="hidden sm:inline">Back</span>
 				</Button>
 				<div className="flex min-w-0 flex-1 items-center gap-4">
 					<div className="flex min-w-0 items-center gap-3">
@@ -152,10 +146,7 @@ export default function ThreadDetailPage() {
 										addSuffix: true,
 									})}
 								</span>
-								<div className="flex items-center gap-2">
-									<div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-									<span className="font-medium">Active</span>
-								</div>
+								
 							</div>
 						</div>
 					</div>

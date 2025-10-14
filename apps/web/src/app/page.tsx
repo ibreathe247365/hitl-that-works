@@ -10,6 +10,9 @@ import {
 	PromptInputToolbar,
 } from "@/components/ai-elements/prompt-input";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/logo";
+import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
+import { LayoutDashboard } from "lucide-react";
 
 function AppPromptInput() {
 	const router = useRouter();
@@ -36,7 +39,7 @@ function AppPromptInput() {
 		<PromptInput onSubmit={handleSubmit}>
 			<PromptInputBody>
 				<PromptInputTextarea
-					placeholder="Describe the mobile app you want to build..."
+					placeholder="What do we automate today..."
 					className="border-white/20 bg-white/10 text-white placeholder:text-white/60"
 				/>
 			</PromptInputBody>
@@ -54,42 +57,54 @@ export default function Home() {
 	const router = useRouter();
 
 	return (
-		<div className="min-h-screen bg-background">
-			<div className="flex items-center justify-between p-6">
-				<div className="flex items-center gap-2">
-					<div className="h-2 w-2 rounded-full bg-white" />
-					<span className="font-semibold text-lg text-white">HITL</span>
+		<BackgroundGradientAnimation
+			firstColor="59, 130, 246"
+			secondColor="147, 51, 234"
+			thirdColor="236, 72, 153"
+			fourthColor="34, 197, 94"
+			fifthColor="251, 191, 36"
+			pointerColor="99, 102, 241"
+			size="60%"
+			blendingValue="multiply"
+			interactive={true}
+			containerClassName="min-h-screen"
+		>
+			<div className="relative z-10 min-h-screen bg-background/10 backdrop-blur-sm">
+				<div className="flex items-center justify-between p-6">
+					<Logo white />
+					<Button
+						variant="outline"
+						onClick={() => router.push("/dashboard")}
+						className="border-white/20 bg-transparent text-white hover:bg-white/10"
+					>
+						<LayoutDashboard className="h-5 w-5" />
+						Go to Dashboard
+					</Button>
 				</div>
-				<Button
-					variant="outline"
-					onClick={() => router.push("/dashboard")}
-					className="border-white/20 bg-transparent text-white hover:bg-white/10"
-				>
-					Dashboard
-				</Button>
-			</div>
 
-			<div className="flex flex-col items-center justify-center px-6 py-20">
-				<div className="w-full max-w-2xl space-y-8 text-center">
-					<div className="space-y-4">
-						<h1 className="font-bold text-4xl text-white">
-							Build native mobile apps, fast.
-						</h1>
-						<p className="text-lg text-white/80">
-							HITL builds complete, cross-platform mobile apps using AI and
-							React Native.
-						</p>
-					</div>
+				<div className="flex flex-col items-center justify-center px-6 py-20">
+					<div className="w-full max-w-2xl space-y-8 text-center">
+						<div className="space-y-4">
+							<h1 className="font-bold text-4xl text-white drop-shadow-lg">
+								HITL = Humans + AI
+							</h1>
+							<p className="text-lg text-white/90 drop-shadow-md">
+								Intelligent AI agents that know when to pause and collaborate with humans.
+							</p>
+						</div>
 
-					<div className="w-full">
-						<AppPromptInput />
+						<div className="w-full">
+							<AppPromptInput />
+						</div>
 					</div>
 				</div>
-			</div>
 
-			<div className="-translate-x-1/2 absolute bottom-6 left-1/2 transform text-sm text-white/60">
-				Published with HITL
+				<div className="-translate-x-1/2 absolute bottom-6 left-1/2 transform text-sm text-white/70 drop-shadow-sm">
+					made with {`<3`} by samir
+				</div>
 			</div>
-		</div>
+		</BackgroundGradientAnimation>
 	);
 }
+
+

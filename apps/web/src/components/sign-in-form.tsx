@@ -29,7 +29,6 @@ export default function SignInForm({
 				{
 					onSuccess: () => {
 						toast.success("Sign in successful");
-						// Let the dashboard layout handle the redirect
 					},
 					onError: (error) => {
 						toast.error(error.error.message || error.error.statusText);

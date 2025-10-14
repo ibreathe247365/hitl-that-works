@@ -3,6 +3,8 @@
 import { api } from "@hitl/backend/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { ListIcon, PlusIcon, UserIcon } from "lucide-react";
+import Link from "next/link";
+import { Logo } from "./logo";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,6 +21,7 @@ export function Sidebar() {
 	const router = useRouter();
 	const user = useQuery(api.auth.getCurrentUser);
 	const addEventMutation = useMutation(api.threads.addEvent);
+
 
 	const handleCreateThread = async () => {
 		const stateId = `thread_${Date.now()}_${Math.random().toString(36).substring(7)}`;
@@ -38,46 +41,44 @@ export function Sidebar() {
 		}
 	};
 
-	const handleViewThreads = () => {
-		router.push("/dashboard");
-	};
-
 	return (
 		<div className="fixed top-0 left-0 flex h-full w-16 flex-col items-center space-y-6 border-r bg-background/95 py-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-			{/* Create Thread Button */}
+			<Link href="/" aria-label="Go to Home" className="mt-1">
+				<div className="rounded-md px-1 py-1">
+					<Logo size="sm" blink />
+				</div>
+			</Link>
+			<br />
 			<Button
 				variant="ghost"
 				size="icon"
 				onClick={handleCreateThread}
-				className="h-12 w-12 transition-colors hover:bg-primary/10 hover:text-primary"
+				className="h-8 w-8 rounded-full border transition-colors hover:bg-primary/10 hover:text-primary"
 				title="Create new thread"
 			>
 				<PlusIcon className="h-6 w-6" />
 			</Button>
 
-			{/* View Threads Button */}
 			<Button
 				variant="ghost"
 				size="icon"
-				onClick={handleViewThreads}
-				className="h-12 w-12 transition-colors hover:bg-primary/10 hover:text-primary"
+				onClick={()=>router.push("/dashboard")}
+				className="h-10 w-10 rounded-full transition-colors hover:bg-primary/10 hover:text-primary"
 				title="View all threads"
 			>
 				<ListIcon className="h-6 w-6" />
 			</Button>
 
-			{/* Spacer */}
 			<div className="flex-1" />
 
-			{/* User Avatar with Popover */}
 			<Popover>
 				<PopoverTrigger asChild>
 					<Button
 						variant="ghost"
 						size="icon"
-						className="h-12 w-12 transition-colors hover:bg-primary/10 hover:text-primary"
+						className="h-10 w-10 rounded-full transition-colors hover:bg-primary/10 hover:text-primary"
 					>
-						<Avatar className="h-8 w-8">
+						<Avatar className="h-10 w-10">
 							<AvatarImage src={user?.image || undefined} />
 							<AvatarFallback>
 								<UserIcon className="h-4 w-4" />

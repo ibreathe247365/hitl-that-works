@@ -1,10 +1,7 @@
 "use client";
 
 import type { ThreadStateWithMetadata } from "@hitl/ai";
-import { formatDistanceToNow } from "date-fns";
 import {
-	ActivityIcon,
-	ClockIcon,
 	DatabaseIcon,
 	RefreshCwIcon,
 } from "lucide-react";
@@ -13,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface RedisStatePanelProps {
 	stateId: string;
@@ -21,49 +19,57 @@ interface RedisStatePanelProps {
 export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 	const [state, setState] = useState<ThreadStateWithMetadata | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [isRefetching, setIsRefetching] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const fetchState = async () => {
+	const fetchState = async (isInitialLoad = false) => {
 		try {
-			setLoading(true);
+			if (isInitialLoad) {
+				setLoading(true);
+			} else {
+				setIsRefetching(true);
+			}
+
 			const response = await fetch(`/api/redis/${stateId}`);
 
 			if (!response.ok) {
-				throw new Error("Failed to fetch Redis state");
+				throw new Error("Failed to fetch Agent context");
 			}
 
 			const data = await response.json();
 			setState(data);
 			setError(null);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Unknown error");
-			setState(null);
+			if (isInitialLoad) {
+				setError(err instanceof Error ? err.message : "Unknown error");
+				setState(null);
+			}
 		} finally {
 			setLoading(false);
+			setIsRefetching(false);
 		}
 	};
 
 	useEffect(() => {
-		fetchState();
+		fetchState(true);
 
-		// Refresh every 15 seconds
-		const interval = setInterval(fetchState, 15000);
+		const interval = setInterval(() => fetchState(false), 15000);
 		return () => clearInterval(interval);
 	}, [stateId]);
 
 	if (loading) {
 		return (
 			<Card className="h-full">
-				<CardHeader className="pb-4">
-					<CardTitle className="flex items-center gap-2 text-lg">
-						<DatabaseIcon className="h-5 w-5 text-primary" />
-						Redis State
+				<CardHeader className="pb-1 pt-1">
+					<CardTitle className="flex items-center gap-2 text-base">
+						<DatabaseIcon className="h-4 w-4 text-primary" />
+						Agent context
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="flex flex-1 items-center justify-center">
-					<div className="py-12 text-center">
-						<div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-						<p className="text-muted-foreground">Loading Redis state...</p>
+					<div className="py-8 text-center">
+						<div className="mx-auto mb-3 h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+						<p className="text-muted-foreground text-sm">Loading Agent context...</p>
 					</div>
 				</CardContent>
 			</Card>
@@ -73,26 +79,26 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 	if (error) {
 		return (
 			<Card className="h-full">
-				<CardHeader className="pb-4">
-					<CardTitle className="flex items-center gap-2 text-lg">
-						<DatabaseIcon className="h-5 w-5 text-primary" />
-						Redis State
+				<CardHeader className="pb-1 pt-1">
+					<CardTitle className="flex items-center gap-2 text-base">
+						<DatabaseIcon className="h-4 w-4 text-primary" />
+						Agent context
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="flex flex-1 items-center justify-center">
-					<div className="mx-auto max-w-sm py-12 text-center">
-						<div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-							<DatabaseIcon className="h-8 w-8 text-destructive" />
+					<div className="mx-auto max-w-sm text-center">
+						<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+							<DatabaseIcon className="h-6 w-6 text-destructive" />
 						</div>
-						<h3 className="mb-2 font-semibold text-lg">
+						<h3 className="mb-2 font-semibold text-base">
 							Redis Connection Error
 						</h3>
-						<p className="mb-4 text-muted-foreground text-sm">
+						<p className="mb-3 text-muted-foreground text-sm">
 							{error.includes("Failed to fetch")
 								? "Unable to connect to Redis. This might be due to missing environment variables or Redis not being configured."
 								: error}
 						</p>
-						<div className="mb-4 rounded-lg border border-dashed bg-muted/50 p-4">
+						<div className="mb-3 rounded-md border border-dashed bg-muted/50 p-3">
 							<p className="text-muted-foreground text-xs">
 								Thread data is still available through the database. Redis is
 								used for real-time state management.
@@ -101,10 +107,10 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 						<Button
 							variant="outline"
 							size="sm"
-							onClick={fetchState}
+							onClick={() => fetchState(true)}
 							className="w-full"
 						>
-							<RefreshCwIcon className="mr-2 h-4 w-4" />
+							<RefreshCwIcon className="mr-2 h-3.5 w-3.5" />
 							Retry Connection
 						</Button>
 					</div>
@@ -116,20 +122,20 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 	if (!state) {
 		return (
 			<Card className="h-full">
-				<CardHeader className="pb-4">
-					<CardTitle className="flex items-center gap-2 text-lg">
-						<DatabaseIcon className="h-5 w-5 text-primary" />
-						Redis State
+				<CardHeader className="pb-1 pt-1">
+					<CardTitle className="flex items-center gap-2 text-base">
+						<DatabaseIcon className="h-4 w-4 text-primary" />
+						Agent context
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="flex flex-1 items-center justify-center">
-					<div className="py-12 text-center">
-						<div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-							<DatabaseIcon className="h-8 w-8 text-muted-foreground" />
+					<div className="py-8 text-center">
+						<div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+							<DatabaseIcon className="h-6 w-6 text-muted-foreground" />
 						</div>
-						<h3 className="mb-2 font-semibold text-lg">No Redis state found</h3>
+						<h3 className="mb-2 font-semibold text-base">No Agent context found</h3>
 						<p className="text-muted-foreground text-sm">
-							This thread doesn't have any Redis state data yet.
+							This thread doesn't have any Agent context data yet.
 						</p>
 					</div>
 				</CardContent>
@@ -139,113 +145,87 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 
 	return (
 		<Card className="h-full">
-			<CardHeader className="pb-4">
-				<CardTitle className="flex items-center gap-2 text-lg">
-					<DatabaseIcon className="h-5 w-5 text-primary" />
-					Redis State
+			<CardHeader>
+				<CardTitle className="flex items-center justify-between text-base">
+					<div className="flex items-center gap-2">
+						<DatabaseIcon className="h-4 w-4 text-primary" />
+						Agent context
+					</div>
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={() => fetchState(false)}
+						disabled={isRefetching}
+						className="h-7 w-7 p-0"
+					>
+						<RefreshCwIcon className={`h-3.5 w-3.5 ${isRefetching ? 'animate-spin' : ''}`} />
+					</Button>
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="min-h-0 flex-1 p-0">
-				<ScrollArea className="h-full px-6 pb-6">
-					<div className="space-y-6">
-						{/* Metadata Section */}
-						{/* {state.metadata && (
-							<div className="space-y-4">
-								<h4 className="flex items-center gap-2 font-semibold text-sm text-foreground">
-									<ActivityIcon className="h-4 w-4 text-primary" />
-									Processing Metadata
-								</h4>
-								<div className="space-y-3">
-									{state.metadata.jobId && (
-										<div className="flex items-center justify-between">
-											<span className="text-muted-foreground text-xs font-medium">
-												Job ID
-											</span>
-											<Badge variant="outline" className="text-xs font-mono">
-												{state.metadata.jobId}
-											</Badge>
-										</div>
-									)}
-									{state.metadata.processingAttempts && (
-										<div className="flex items-center justify-between">
-											<span className="text-muted-foreground text-xs font-medium">
-												Attempts
-											</span>
-											<Badge variant="secondary" className="text-xs">
-												{state.metadata.processingAttempts}
-											</Badge>
-										</div>
-									)}
-									{state.metadata.enqueuedAt && (
-										<div className="flex items-center gap-2">
-											<ClockIcon className="h-3 w-3 text-muted-foreground" />
-											<span className="text-muted-foreground text-xs">
-												Enqueued{" "}
-												{formatDistanceToNow(new Date(state.metadata.enqueuedAt), { addSuffix: true })}
-											</span>
-										</div>
-									)}
-									{state.metadata.lastProcessedAt && (
-										<div className="flex items-center gap-2">
-											<ClockIcon className="h-3 w-3 text-muted-foreground" />
-											<span className="text-muted-foreground text-xs">
-												Last Processed{" "}
-												{formatDistanceToNow(new Date(state.metadata.lastProcessedAt), { addSuffix: true })}
-											</span>
-										</div>
-									)}
-								</div>
-							</div>
-						)} */}
-
-						{/* Thread Events */}
-						<div className="space-y-4">
-							<h4 className="font-semibold text-foreground text-sm">
-								Thread Events ({state.thread.events.length})
-							</h4>
+				<Tabs defaultValue="pretty" className="h-full flex flex-col">
+					<div className="px-4 pt-2 pb-1">
+						<TabsList className="grid w-full grid-cols-2 h-8">
+							<TabsTrigger value="pretty" className="text-xs">Pretty</TabsTrigger>
+							<TabsTrigger value="raw" className="text-xs">RAW</TabsTrigger>
+						</TabsList>
+					</div>
+					
+					<TabsContent value="pretty" className="flex-1 min-h-0 mt-0">
+						<ScrollArea className="h-full px-4 pb-4">
 							<div className="space-y-3">
-								{state.thread.events.map((event, index) => (
-									<div key={index} className="rounded-lg border bg-card p-3">
-										<div className="mb-3 flex items-center gap-2">
-											<Badge variant="outline" className="text-xs">
-												{event.type}
-											</Badge>
-										</div>
-										<pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 text-xs leading-relaxed">
-											{JSON.stringify(event.data, null, 2)}
-										</pre>
+								<div className="space-y-2">
+									<h4 className="font-medium text-foreground text-xs">
+										Thread Events ({state.thread.events.length})
+									</h4>
+									<div className="space-y-2">
+										{state.thread.events.map((event, index) => (
+											<div key={index} className="rounded-md border bg-card p-2">
+												<div className="mb-2 flex items-center gap-2">
+													<Badge variant="outline" className="text-xs px-1.5 py-0.5">
+														{event.type}
+													</Badge>
+												</div>
+												<pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded bg-muted p-2 text-xs leading-relaxed">
+													{JSON.stringify(event.data, null, 2)}
+												</pre>
+											</div>
+										))}
 									</div>
-								))}
-							</div>
-						</div>
+								</div>
 
-						{/* Initial Email */}
-						{state.thread.initial_email && (
-							<div className="space-y-4">
-								<h4 className="font-semibold text-foreground text-sm">
-									Initial Email
+								{/* Initial Email */}
+								{state.thread.initial_email && (
+									<div className="space-y-2">
+										<h4 className="font-medium text-foreground text-xs">
+											Initial Email
+										</h4>
+										<div className="rounded-md border bg-card p-2">
+											<pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded bg-muted p-2 text-xs leading-relaxed">
+												{JSON.stringify(state.thread.initial_email, null, 2)}
+											</pre>
+										</div>
+									</div>
+								)}
+							</div>
+						</ScrollArea>
+					</TabsContent>
+					
+					<TabsContent value="raw" className="flex-1 min-h-0 mt-0">
+						<ScrollArea className="h-full px-4 pb-4">
+							<div className="space-y-2">
+								<h4 className="font-medium text-foreground text-xs">
+									Raw State Data
 								</h4>
-								<div className="rounded-lg border bg-card p-3">
-									<pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 text-xs leading-relaxed">
-										{JSON.stringify(state.thread.initial_email, null, 2)}
+								<div className="rounded-md border bg-card p-2">
+									<pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded bg-muted p-2 text-xs leading-relaxed">
+										{JSON.stringify(state, null, 2)}
 									</pre>
 								</div>
 							</div>
-						)}
-
-						{/* Raw State */}
-						<div className="space-y-4">
-							<h4 className="font-semibold text-foreground text-sm">
-								Raw State
-							</h4>
-							<div className="rounded-lg border bg-card p-3">
-								<pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 text-xs leading-relaxed">
-									{JSON.stringify(state, null, 2)}
-								</pre>
-							</div>
-						</div>
-					</div>
-				</ScrollArea>
+						</ScrollArea>
+					</TabsContent>
+				</Tabs>
 			</CardContent>
 		</Card>
 	);
