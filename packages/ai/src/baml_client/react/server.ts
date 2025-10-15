@@ -20,19 +20,13 @@ $ pnpm add @boundaryml/baml
 
 'use server'
 
-import type { Audio, Image, Pdf, Video } from "@boundaryml/baml";
-import { b } from "../index";
-import type * as types from "../types";
-import type {
-	Await,
-	Calculation,
-	Check,
-	Checked,
-	ClarificationRequest,
-	DoneForNow,
-	IntentCalculate,
-	NothingToDo,
-} from "../types";
+import { b } from '../index';
+import type { Check, Checked  } from "../types";
+import type { Image, Audio, Pdf, Video } from "@boundaryml/baml";
+
+import type {  Await,  Calculation,  ClarificationRequest,  DoneForNow,  IntentCalculate,  NothingToDo } from "../types"
+
+import type * as types from "../types"
 
 /**
  * Regular BAML server actions that return direct responses.
@@ -49,15 +43,11 @@ import type {
  * @returns {Promise<types.ClarificationRequest | types.DoneForNow | types.IntentCalculate | types.NothingToDo | types.Await>} A promise that resolves with the result of the action.
  */
 export const DetermineNextStep = async (
-	thread: string,
-): Promise<
-	| types.ClarificationRequest
-	| types.DoneForNow
-	| types.IntentCalculate
-	| types.NothingToDo
-	| types.Await
-> => {
-	return b.DetermineNextStep(thread);
+  thread: string,
+): Promise<types.ClarificationRequest | types.DoneForNow | types.IntentCalculate | types.NothingToDo | types.Await> => {
+  return b.DetermineNextStep(
+    thread,
+  );
 };
 
 /**
@@ -71,9 +61,11 @@ export const DetermineNextStep = async (
  * @returns {Promise<types.Calculation>} A promise that resolves with the result of the action.
  */
 export const PerformCalculation = async (
-	expression: string,
+  expression: string,
 ): Promise<types.Calculation> => {
-	return b.PerformCalculation(expression);
+  return b.PerformCalculation(
+    expression,
+  );
 };
 
 /**
@@ -88,8 +80,11 @@ export const PerformCalculation = async (
  * @returns {Promise<string>} A promise that resolves with the result of the action.
  */
 export const SquashResponseContext = async (
-	thread: string,
-	error: string,
+  thread: string,
+  error: string,
 ): Promise<string> => {
-	return b.SquashResponseContext(thread, error);
+  return b.SquashResponseContext(
+    thread,
+    error,
+  );
 };

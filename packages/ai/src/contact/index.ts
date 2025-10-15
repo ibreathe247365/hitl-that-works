@@ -35,7 +35,6 @@ export async function createHumanContact(
 	const channelArray = Array.isArray(channels) ? channels : [channels];
 	const results: ContactResult[] = [];
 
-	// Send to all channels in parallel
 	const promises = channelArray.map(async (channel) => {
 		try {
 			if ("email" in channel) {

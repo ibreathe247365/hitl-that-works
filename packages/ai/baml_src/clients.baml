@@ -61,6 +61,15 @@ client<llm> CustomGemini {
   }
 }
 
+client<llm> CustomOpenRouter {
+  provider "openai-generic"
+  options {
+    base_url "https://openrouter.ai/api/v1"
+    api_key env.OPENROUTER_API_KEY
+    model "openai/gpt-oss-120b"
+  }
+}
+
 // Example AWS Bedrock client (uncomment to use)
 // client<llm> CustomBedrock {
 //   provider aws-bedrock

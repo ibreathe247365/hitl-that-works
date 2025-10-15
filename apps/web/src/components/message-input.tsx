@@ -41,7 +41,6 @@ export function MessageInput({ stateId, onMessageSent }: MessageInputProps) {
 			});
 
 			if (!response.ok) {
-				console.log(response);
 				throw new Error("Failed to send message");
 			}
 

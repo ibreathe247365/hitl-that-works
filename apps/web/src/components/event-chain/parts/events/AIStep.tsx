@@ -110,13 +110,25 @@ export function AIStepContent({
 }
 
 export function AIStepStep({ event }: { event: Event }): ReactElement {
-	return (
-		<ChainOfThoughtStep
-			label="AI Step"
-			description="Reasoning step"
-			status="complete"
-		>
-			<AIStepContent event={event} />
-		</ChainOfThoughtStep>
-	);
+    const data = (event.data as any) ?? {};
+    const intent: string | undefined = data?.payload?.intent;
+    const iconColor =
+        intent === "calculate"
+            ? "blue"
+            : intent === "done_for_now"
+            ? "green"
+            : intent === "nothing_to_do"
+            ? "white"
+            : undefined;
+
+    return (
+        <ChainOfThoughtStep
+            iconColor={iconColor}
+            label="AI Step"
+            description="Reasoning step"
+            status="complete"
+        >
+            <AIStepContent event={event} />
+        </ChainOfThoughtStep>
+    );
 }

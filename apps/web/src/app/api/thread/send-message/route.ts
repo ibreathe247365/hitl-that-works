@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
 			jobId: result.jobId,
 		});
 	} catch (error) {
+		console.log("error", error);
 		return createErrorResponse(
 			"Failed to send message",
 			error instanceof Error ? JSON.stringify(error.cause) : "Unknown error",

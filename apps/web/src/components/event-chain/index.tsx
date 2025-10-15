@@ -9,21 +9,18 @@ import {
 } from "@/components/ai-elements/chain-of-thought";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { EventBranch } from "./parts/EventBranch";
 import { EventContentStepList } from "./parts/EventContentStepList";
-import { buildOperationGraph } from "./parts/utils";
 
 interface EventChainProps {
 	events: Event[];
 }
 
 export function EventChain({ events }: EventChainProps) {
-	const {
-		rootOperationEvents,
-		nonOperationEvents,
-		eventIndex,
-		operationIdToChildren,
-	} = buildOperationGraph(events);
+    const eventsSortedByTime = [...events].sort((a, b) => {
+        const aTs = Number(new Date(((a.data as any)?.timestamp) ?? 0));
+        const bTs = Number(new Date(((b.data as any)?.timestamp) ?? 0));
+        return aTs - bTs;
+    });
 
 	if (events.length === 0) {
 		return (
@@ -63,19 +60,7 @@ export function EventChain({ events }: EventChainProps) {
 					<ChainOfThought defaultOpen={true}>
 						<ChainOfThoughtHeader>Event Chain</ChainOfThoughtHeader>
 						<ChainOfThoughtContent>
-							{rootOperationEvents.map((rootEvent) => (
-								<EventBranch
-									key={
-										((rootEvent.data as any)?.operationId ?? "root") +
-										"-" +
-										(eventIndex.get(rootEvent) ?? "na")
-									}
-									node={rootEvent}
-									operationIdToChildren={operationIdToChildren}
-									eventIndex={eventIndex}
-								/>
-							))}
-							<EventContentStepList events={nonOperationEvents} />
+                            <EventContentStepList events={eventsSortedByTime} />
 						</ChainOfThoughtContent>
 					</ChainOfThought>
 				</ScrollArea>

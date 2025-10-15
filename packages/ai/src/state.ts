@@ -18,7 +18,7 @@ const ThreadMetadataSchema = z.object({
 });
 
 // Zod schema for the complete Redis data structure
-const ThreadStateWithMetadataSchema = z.object({
+export const ThreadStateWithMetadataSchema = z.object({
 	thread: ThreadSchema,
 	metadata: ThreadMetadataSchema.optional(),
 });
@@ -71,7 +71,7 @@ export async function getThreadStateWithMetadata(
 ): Promise<ThreadStateWithMetadata | null> {
 	const state = await redis.get<string>(stateId);
 	if (!state) return null;
-	console.log("state", JSON.stringify(state, null, 2));
+	// console.log("state", JSON.stringify(state, null, 2));
 
 	try {
 		return ThreadStateWithMetadataSchema.parse(state);
@@ -105,4 +105,30 @@ export async function updateThreadStateMetadata(
 	await redis.set(stateId, JSON.stringify(updatedState));
 
 	syncLatestEventToConvex(stateId, existingState.thread, userId);
+}
+
+export async function updateThreadState(
+	stateId: string,
+	thread: Thread,
+	userId?: string,
+): Promise<void> {
+	const validatedThread = ThreadSchema.parse(thread);
+
+	const existingState = await getThreadStateWithMetadata(stateId);
+	if (!existingState) {
+		throw new Error(`Thread state not found: ${stateId}`);
+	}
+
+	const updatedState: ThreadStateWithMetadata = {
+		...existingState,
+		thread: validatedThread,
+		metadata: {
+			...existingState.metadata,
+			lastProcessedAt: new Date().toISOString(),
+		},
+	};
+
+	await redis.set(stateId, JSON.stringify(updatedState));
+
+	syncLatestEventToConvex(stateId, validatedThread, userId);
 }

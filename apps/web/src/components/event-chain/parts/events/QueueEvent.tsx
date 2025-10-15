@@ -4,6 +4,7 @@ import type { Event } from "@hitl/ai/schemas";
 import type { ReactElement } from "react";
 import { ChainOfThoughtStep } from "@/components/ai-elements/chain-of-thought";
 import { Badge } from "@/components/ui/badge";
+import { getOperationStatusColorClass } from "../utils";
 
 export function QueueEventContent({ event }: { event: Event }): ReactElement {
 	const data = (event.data as any) ?? {};
@@ -16,11 +17,7 @@ export function QueueEventContent({ event }: { event: Event }): ReactElement {
 					{String(data.name ?? "Queue Event")}
 				</h4>
 				{data.status && (
-					<Badge
-						variant={
-							isSucceeded ? "default" : isFailed ? "destructive" : "secondary"
-						}
-					>
+					<Badge className={getOperationStatusColorClass(data.status)}>
 						{String(data.status)}
 					</Badge>
 				)}

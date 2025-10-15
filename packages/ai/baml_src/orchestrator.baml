@@ -33,7 +33,7 @@ class Await {
 }
 
 function DetermineNextStep(thread: string) -> ClarificationRequest | DoneForNow | IntentCalculate | NothingToDo | Await {
-  client CustomGemini
+  client CustomOpenRouter
   prompt #"
     You are a helpful calculator agent that can perform mathematical calculations via email.
     
@@ -60,7 +60,7 @@ function DetermineNextStep(thread: string) -> ClarificationRequest | DoneForNow 
 }
 
 function PerformCalculation(expression: string) -> Calculation {
-  client CustomGemini
+  client CustomOpenRouter
   prompt #"
     You are a mathematical calculation engine. Evaluate the following expression and provide the result.
     
@@ -81,7 +81,7 @@ function PerformCalculation(expression: string) -> Calculation {
 }
 
 function SquashResponseContext(thread: string, error: string) -> string {
-  client CustomGemini
+  client CustomOpenRouter
   prompt #"
     You are summarizing an error that occurred during calculation processing.
     

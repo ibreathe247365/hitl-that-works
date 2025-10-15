@@ -1,13 +1,16 @@
 "use client";
 
-import type { ThreadStateWithMetadata } from "@hitl/ai";
-import { DatabaseIcon, RefreshCwIcon } from "lucide-react";
+import type { ThreadStateWithMetadata, Thread } from "@hitl/ai";
+import { DatabaseIcon, RefreshCwIcon, EditIcon, SaveIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// import { RedisStateEditor } from "./redis-state-editor";
+import { RedisStateModal } from "@/components/redis-state-modal";
 
 interface RedisStatePanelProps {
 	stateId: string;
@@ -18,6 +21,8 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 	const [loading, setLoading] = useState(true);
 	const [isRefetching, setIsRefetching] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	// const [editMode, setEditMode] = useState<"json" | "form">("json");
 
 	const fetchState = async (isInitialLoad = false) => {
 		try {
@@ -45,6 +50,19 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 			setLoading(false);
 			setIsRefetching(false);
 		}
+	};
+
+	const handleEdit = () => {
+		setIsModalOpen(true);
+	};
+
+	const handleModalClose = () => {
+		setIsModalOpen(false);
+	};
+
+	const handleSaveSuccess = async () => {
+		setIsModalOpen(false);
+		await fetchState(false);
 	};
 
 	useEffect(() => {
@@ -145,101 +163,127 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 	}
 
 	return (
-		<Card className="h-full">
-			<CardHeader>
-				<CardTitle className="flex items-center justify-between text-base">
-					<div className="flex items-center gap-2">
-						<DatabaseIcon className="h-4 w-4 text-primary" />
-						Agent context
+		<>
+			<Card className="h-full">
+				<CardHeader>
+					<CardTitle className="flex items-center justify-between text-base">
+						<div className="flex items-center gap-2">
+							<DatabaseIcon className="h-4 w-4 text-primary" />
+							Agent context
+						</div>
+					<div className="flex items-center gap-1">
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={handleEdit}
+							className="h-7 px-2 text-xs"
+						>
+							<EditIcon className="mr-1 h-3 w-3" />
+							Edit
+						</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={() => fetchState(false)}
+							disabled={isRefetching}
+							className="h-7 w-7 p-0"
+						>
+							<RefreshCwIcon
+								className={`h-3.5 w-3.5 ${isRefetching ? "animate-spin" : ""}`}
+							/>
+						</Button>
 					</div>
-					<Button
-						variant="ghost"
-						size="sm"
-						onClick={() => fetchState(false)}
-						disabled={isRefetching}
-						className="h-7 w-7 p-0"
-					>
-						<RefreshCwIcon
-							className={`h-3.5 w-3.5 ${isRefetching ? "animate-spin" : ""}`}
-						/>
-					</Button>
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="min-h-0 flex-1 p-0">
-				<Tabs defaultValue="pretty" className="flex h-full flex-col">
-					<div className="px-4 pt-2 pb-1">
-						<TabsList className="grid h-8 w-full grid-cols-2">
-							<TabsTrigger value="pretty" className="text-xs">
-								Pretty
-							</TabsTrigger>
-							<TabsTrigger value="raw" className="text-xs">
-								RAW
-							</TabsTrigger>
-						</TabsList>
-					</div>
+					</CardTitle>
+				</CardHeader>
+				<CardContent className="min-h-0 flex-1 p-0">
+					<Tabs defaultValue="pretty" className="flex h-full flex-col">
+						<div className="px-4 pt-2 pb-1">
+							<TabsList className="grid h-8 w-full grid-cols-2">
+								<TabsTrigger value="pretty" className="text-xs">
+									Pretty
+								</TabsTrigger>
+								<TabsTrigger value="raw" className="text-xs">
+									RAW
+								</TabsTrigger>
+							</TabsList>
+						</div>
 
-					<TabsContent value="pretty" className="mt-0 min-h-0 flex-1">
-						<ScrollArea className="h-full px-4 pb-4">
-							<div className="space-y-3">
-								<div className="space-y-2">
-									<h4 className="font-medium text-foreground text-xs">
-										Thread Events ({state.thread.events.length})
-									</h4>
-									<div className="space-y-2">
-										{state.thread.events.map((event, index) => (
-											<div
-												key={index}
-												className="rounded-md border bg-card p-2"
-											>
-												<div className="mb-2 flex items-center gap-2">
-													<Badge
-														variant="outline"
-														className="px-1.5 py-0.5 text-xs"
-													>
-														{event.type}
-													</Badge>
-												</div>
-												<pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded bg-muted p-2 text-xs leading-relaxed">
-													{JSON.stringify(event.data, null, 2)}
-												</pre>
-											</div>
-										))}
-									</div>
-								</div>
-
-								{/* Initial Email */}
-								{state.thread.initial_email && (
+						<TabsContent value="pretty" className="mt-0 min-h-0 flex-1">
+							<ScrollArea className="h-full px-4 pb-4">
+								<div className="space-y-3">
 									<div className="space-y-2">
 										<h4 className="font-medium text-foreground text-xs">
-											Initial Email
+											Thread Events ({state.thread.events.length})
 										</h4>
-										<div className="rounded-md border bg-card p-2">
-											<pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded bg-muted p-2 text-xs leading-relaxed">
-												{JSON.stringify(state.thread.initial_email, null, 2)}
-											</pre>
+										<div className="space-y-2">
+											{state.thread.events.map((event, index) => (
+												<div
+													key={index}
+													className="rounded-md border bg-card p-2"
+												>
+													<div className="mb-2 flex items-center gap-2">
+														<Badge
+															variant="outline"
+															className="px-1.5 py-0.5 text-xs"
+														>
+															{event.type}
+														</Badge>
+													</div>
+													<pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded bg-muted p-2 text-xs leading-relaxed">
+														{JSON.stringify(event.data, null, 2)}
+													</pre>
+												</div>
+											))}
 										</div>
 									</div>
-								)}
-							</div>
-						</ScrollArea>
-					</TabsContent>
 
-					<TabsContent value="raw" className="mt-0 min-h-0 flex-1">
-						<ScrollArea className="h-full px-4 pb-4">
-							<div className="space-y-2">
-								<h4 className="font-medium text-foreground text-xs">
-									Raw State Data
-								</h4>
-								<div className="rounded-md border bg-card p-2">
-									<pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded bg-muted p-2 text-xs leading-relaxed">
-										{JSON.stringify(state, null, 2)}
-									</pre>
+									{/* Initial Email */}
+									{state.thread.initial_email && (
+										<div className="space-y-2">
+											<h4 className="font-medium text-foreground text-xs">
+												Initial Email
+											</h4>
+											<div className="rounded-md border bg-card p-2">
+												<pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded bg-muted p-2 text-xs leading-relaxed">
+													{JSON.stringify(state.thread.initial_email, null, 2)}
+												</pre>
+											</div>
+										</div>
+									)}
 								</div>
-							</div>
-						</ScrollArea>
-					</TabsContent>
-				</Tabs>
-			</CardContent>
-		</Card>
+							</ScrollArea>
+						</TabsContent>
+
+						<TabsContent value="raw" className="mt-0 min-h-0 flex-1">
+							<ScrollArea className="h-full px-4 pb-4">
+								<div className="space-y-2">
+									<h4 className="font-medium text-foreground text-xs">
+										Raw State Data
+									</h4>
+									<div className="rounded-md border bg-card p-2">
+										<pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded bg-muted p-2 text-xs leading-relaxed">
+											{JSON.stringify(state, null, 2)}
+										</pre>
+									</div>
+								</div>
+							</ScrollArea>
+						</TabsContent>
+
+					</Tabs>
+				</CardContent>
+			</Card>
+
+			{/* Edit Modal */}
+			{state && (
+				<RedisStateModal
+					isOpen={isModalOpen}
+					onClose={handleModalClose}
+					onSaveSuccess={handleSaveSuccess}
+					state={state}
+					stateId={stateId}
+						mode="json"
+				/>
+			)}
+		</>
 	);
 }

@@ -17,8 +17,8 @@ export async function sendEmail(
 ): Promise<EmailContactResult> {
 	try {
 		const emailData = {
-			from: process.env.FROM_EMAIL || "noreply@example.com",
-			to: [channel.email.address],
+			from: "Acme <onboarding@resend.dev>",
+			to: ["delivered@resend.dev"],
 			subject: channel.email.subject || "AI Agent Message",
 			html: `
 				<div>
@@ -40,6 +40,8 @@ export async function sendEmail(
 		};
 
 		const result = await resend.emails.send(emailData);
+
+		console.log("resultFROMRESEND", result);
 
 		if (result.error) {
 			throw new Error(`Resend error: ${result.error.message}`);

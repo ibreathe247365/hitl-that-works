@@ -13,6 +13,7 @@ import {
 import { Logo } from "@/components/logo";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/mode-toggle";
 
 function AppPromptInput() {
 	const router = useRouter();
@@ -40,7 +41,7 @@ function AppPromptInput() {
 			<PromptInputBody>
 				<PromptInputTextarea
 					placeholder="What do we automate today..."
-					className="border-white/20 bg-white/10 text-white placeholder:text-white/60"
+					className="border-foreground/20 bg-background/10 text-foreground placeholder:text-foreground/60 dark:border-white/30 dark:text-white dark:placeholder:text-white/70"
 				/>
 			</PromptInputBody>
 			<PromptInputToolbar>
@@ -69,26 +70,29 @@ export default function Home() {
 			interactive={true}
 			containerClassName="min-h-screen"
 		>
-			<div className="relative z-10 min-h-screen bg-background/10 backdrop-blur-sm">
+			<div className="relative z-10 min-h-screen bg-background/5 backdrop-blur-sm dark:bg-background/20">
 				<div className="flex items-center justify-between p-6">
-					<Logo white />
-					<Button
-						variant="outline"
-						onClick={() => router.push("/dashboard")}
-						className="border-white/20 bg-transparent text-white hover:bg-white/10"
-					>
-						<LayoutDashboard className="h-5 w-5" />
-						Go to Dashboard
-					</Button>
+					<Logo />
+					<div className="flex items-center gap-4">
+						<ModeToggle />
+						<Button
+							variant="outline"
+							onClick={() => router.push("/dashboard")}
+							className="border-foreground/20 bg-background/10 text-foreground hover:bg-background/20 dark:border-white/30 dark:bg-transparent dark:text-white dark:hover:bg-white/20"
+						>
+							<LayoutDashboard className="h-5 w-5" />
+							Go to Dashboard
+						</Button>
+					</div>
 				</div>
 
 				<div className="flex flex-col items-center justify-center px-6 py-20">
 					<div className="w-full max-w-2xl space-y-8 text-center">
 						<div className="space-y-4">
-							<h1 className="font-bold text-4xl text-white drop-shadow-lg">
+							<h1 className="font-bold text-4xl text-foreground drop-shadow-lg dark:text-white">
 								HITL = Humans + AI
 							</h1>
-							<p className="text-lg text-white/90 drop-shadow-md">
+							<p className="text-lg text-foreground/90 drop-shadow-md dark:text-white/95">
 								Intelligent AI agents that know when to pause and collaborate
 								with humans.
 							</p>
@@ -100,7 +104,7 @@ export default function Home() {
 					</div>
 				</div>
 
-				<div className="-translate-x-1/2 absolute bottom-6 left-1/2 transform text-sm text-white/70 drop-shadow-sm">
+				<div className="-translate-x-1/2 absolute bottom-6 left-1/2 transform text-sm text-foreground/70 drop-shadow-sm dark:text-white/80">
 					made with {"<3"} by samir
 				</div>
 			</div>
