@@ -7,6 +7,31 @@ import type { DataModel } from "./_generated/dataModel";
 import { query } from "./_generated/server";
 
 const siteUrl = process.env.SITE_URL!;
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+const convexSiteUrl = process.env.CONVEX_SITE_URL || "";
+
+function toOrigin(url: string): string | null {
+  try {
+    const u = new URL(url);
+    return `${u.protocol}//${u.host}`;
+  } catch {
+    return null;
+  }
+}
+
+const defaultLocalOrigins = [
+  "http://localhost:3001",
+  "http://127.0.0.1:3001",
+];
+
+const trustedOrigins = [
+  siteUrl,
+  appUrl,
+  convexSiteUrl,
+  ...defaultLocalOrigins,
+]
+  .map((u) => u && toOrigin(u))
+  .filter((u): u is string => Boolean(u));
 
 export const authComponent = createClient<DataModel>(components.betterAuth);
 
@@ -21,7 +46,7 @@ export const createAuth = (
 			disabled: optionsOnly,
 		},
 		baseURL: siteUrl,
-		trustedOrigins: [siteUrl],
+		trustedOrigins,
 		database: authComponent.adapter(ctx),
 		emailAndPassword: {
 			enabled: true,
@@ -29,6 +54,7 @@ export const createAuth = (
 		},
 		socialProviders: {
 			google: {
+				prompt: "select_account", 
 				clientId: process.env.GOOGLE_CLIENT_ID!,
 				clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
 			},
