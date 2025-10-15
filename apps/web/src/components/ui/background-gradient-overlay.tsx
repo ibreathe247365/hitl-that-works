@@ -48,7 +48,11 @@ export function BackgroundGradientOverlay({
 			<svg className="hidden">
 				<defs>
 					<filter id="blurMe">
-						<feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+						<feGaussianBlur
+							in="SourceGraphic"
+							stdDeviation="10"
+							result="blur"
+						/>
 						<feColorMatrix
 							in="blur"
 							mode="matrix"
@@ -116,5 +120,3 @@ export function BackgroundGradientOverlay({
 }
 
 export default BackgroundGradientOverlay;
-
-

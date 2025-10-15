@@ -1,16 +1,22 @@
 "use client";
 
-import type { ThreadStateWithMetadata, Thread } from "@hitl/ai";
-import { DatabaseIcon, RefreshCwIcon, EditIcon, SaveIcon, XIcon } from "lucide-react";
+import type { Thread, ThreadStateWithMetadata } from "@hitl/ai";
+import {
+	DatabaseIcon,
+	EditIcon,
+	RefreshCwIcon,
+	SaveIcon,
+	XIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+// import { RedisStateEditor } from "./redis-state-editor";
+import { RedisStateModal } from "@/components/redis-state-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-// import { RedisStateEditor } from "./redis-state-editor";
-import { RedisStateModal } from "@/components/redis-state-modal";
 
 interface RedisStatePanelProps {
 	stateId: string;
@@ -171,28 +177,28 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 							<DatabaseIcon className="h-4 w-4 text-primary" />
 							Agent context
 						</div>
-					<div className="flex items-center gap-1">
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={handleEdit}
-							className="h-7 px-2 text-xs"
-						>
-							<EditIcon className="mr-1 h-3 w-3" />
-							Edit
-						</Button>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => fetchState(false)}
-							disabled={isRefetching}
-							className="h-7 w-7 p-0"
-						>
-							<RefreshCwIcon
-								className={`h-3.5 w-3.5 ${isRefetching ? "animate-spin" : ""}`}
-							/>
-						</Button>
-					</div>
+						<div className="flex items-center gap-1">
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={handleEdit}
+								className="h-7 px-2 text-xs"
+							>
+								<EditIcon className="mr-1 h-3 w-3" />
+								Edit
+							</Button>
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={() => fetchState(false)}
+								disabled={isRefetching}
+								className="h-7 w-7 p-0"
+							>
+								<RefreshCwIcon
+									className={`h-3.5 w-3.5 ${isRefetching ? "animate-spin" : ""}`}
+								/>
+							</Button>
+						</div>
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="min-h-0 flex-1 p-0">
@@ -268,7 +274,6 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 								</div>
 							</ScrollArea>
 						</TabsContent>
-
 					</Tabs>
 				</CardContent>
 			</Card>
@@ -281,7 +286,7 @@ export function RedisStatePanel({ stateId }: RedisStatePanelProps) {
 					onSaveSuccess={handleSaveSuccess}
 					state={state}
 					stateId={stateId}
-						mode="json"
+					mode="json"
 				/>
 			)}
 		</>

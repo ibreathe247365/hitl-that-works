@@ -41,7 +41,6 @@ export async function sendEmail(
 
 		const result = await resend.emails.send(emailData);
 
-
 		if (result.error) {
 			throw new Error(`Resend error: ${result.error.message}`);
 		}

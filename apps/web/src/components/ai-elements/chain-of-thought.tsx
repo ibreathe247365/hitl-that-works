@@ -109,18 +109,18 @@ export const ChainOfThoughtHeader = memo(
 );
 
 export type ChainOfThoughtStepProps = ComponentProps<"div"> & {
-    icon?: LucideIcon;
-    iconColor?: string;
-    label: string;
-    description?: string;
-    status?: "complete" | "active" | "pending";
+	icon?: LucideIcon;
+	iconColor?: string;
+	label: string;
+	description?: string;
+	status?: "complete" | "active" | "pending";
 };
 
 export const ChainOfThoughtStep = memo(
 	({
-        className,
-        icon: Icon = DotIcon,
-        iconColor,
+		className,
+		icon: Icon = DotIcon,
+		iconColor,
 		label,
 		description,
 		status = "complete",
@@ -143,8 +143,8 @@ export const ChainOfThoughtStep = memo(
 				)}
 				{...props}
 			>
-                <div className="relative mt-0.5">
-                    <Icon className="size-6" color={iconColor} />
+				<div className="relative mt-0.5">
+					<Icon className="size-6" color={iconColor} />
 					<div className="-mx-px absolute top-7 bottom-0 left-1/2 w-px bg-border" />
 				</div>
 				<div className="flex-1 space-y-2">

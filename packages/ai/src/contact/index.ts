@@ -1,7 +1,7 @@
 // Main contact system - unified interface for all contact channels
 
 import { sendEmail } from "./channels/email";
-import { sendSlack, sendSlackFunctionApprovalRequest } from "./channels/slack";
+import { sendSlack } from "./channels/slack";
 import { sendWebhook } from "./channels/webhook";
 import type {
 	ContactChannel,

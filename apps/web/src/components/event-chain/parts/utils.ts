@@ -61,16 +61,16 @@ export function buildOperationGraph(events: Event[]) {
 
 export function getEventLabel(currentEvent: Event) {
 	switch (currentEvent.type) {
-        case "thread_created":
-            return "Thread Created";
+		case "thread_created":
+			return "Thread Created";
 		case "human_response":
 			return "Human Response";
 		case "request_more_information":
 			return "Request More Information";
 		case "user_message":
 			return "User Message";
-        case "error":
-            return "Error";
+		case "error":
+			return "Error";
 		case "tool_call":
 		case "function_call":
 			return (
@@ -91,16 +91,16 @@ export function getEventLabel(currentEvent: Event) {
 			return "Webhook Received";
 		case "webhook":
 			return "Webhook";
-        case "calculate":
-            return "Calculate";
-        case "done_for_now":
-            return "Done For Now";
-        case "nothing_to_do":
-            return "Nothing To Do";
-        case "calculate_result":
-            return "Calculation Result";
-        case "human_contact_sent":
-            return "Human Contact Sent";
+		case "calculate":
+			return "Calculate";
+		case "done_for_now":
+			return "Done For Now";
+		case "nothing_to_do":
+			return "Nothing To Do";
+		case "calculate_result":
+			return "Calculation Result";
+		case "human_contact_sent":
+			return "Human Contact Sent";
 		default:
 			return `${currentEvent.type} Event`;
 	}
@@ -108,15 +108,15 @@ export function getEventLabel(currentEvent: Event) {
 
 export function getEventStatusColor(currentEvent: Event) {
 	switch (currentEvent.type) {
-        case "thread_created":
-            return "bg-emerald-500";
+		case "thread_created":
+			return "bg-emerald-500";
 		case "human_response":
 		case "request_more_information":
 			return "bg-yellow-500";
 		case "user_message":
 			return "bg-blue-500";
-        case "error":
-            return "bg-red-500";
+		case "error":
+			return "bg-red-500";
 		case "tool_call":
 		case "function_call":
 			return "bg-purple-500";
@@ -131,16 +131,16 @@ export function getEventStatusColor(currentEvent: Event) {
 			return "bg-indigo-500";
 		case "queue":
 			return "bg-gray-500";
-        case "calculate":
-            return "bg-indigo-400";
-        case "done_for_now":
-            return "bg-green-600";
-        case "nothing_to_do":
-            return "bg-slate-500";
-        case "calculate_result":
-            return "bg-orange-500";
-        case "human_contact_sent":
-            return "bg-pink-500";
+		case "calculate":
+			return "bg-indigo-400";
+		case "done_for_now":
+			return "bg-green-600";
+		case "nothing_to_do":
+			return "bg-slate-500";
+		case "calculate_result":
+			return "bg-orange-500";
+		case "human_contact_sent":
+			return "bg-pink-500";
 		case "rollback-agent":
 			return "bg-zinc-500";
 		default:

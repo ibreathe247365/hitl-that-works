@@ -16,11 +16,11 @@ interface EventChainProps {
 }
 
 export function EventChain({ events }: EventChainProps) {
-    const eventsSortedByTime = [...events].sort((a, b) => {
-        const aTs = Number(new Date(((a.data as any)?.timestamp) ?? 0));
-        const bTs = Number(new Date(((b.data as any)?.timestamp) ?? 0));
-        return aTs - bTs;
-    });
+	const eventsSortedByTime = [...events].sort((a, b) => {
+		const aTs = Number(new Date((a.data as any)?.timestamp ?? 0));
+		const bTs = Number(new Date((b.data as any)?.timestamp ?? 0));
+		return aTs - bTs;
+	});
 
 	if (events.length === 0) {
 		return (
@@ -60,7 +60,7 @@ export function EventChain({ events }: EventChainProps) {
 					<ChainOfThought defaultOpen={true}>
 						<ChainOfThoughtHeader>Event Chain</ChainOfThoughtHeader>
 						<ChainOfThoughtContent>
-                            <EventContentStepList events={eventsSortedByTime} />
+							<EventContentStepList events={eventsSortedByTime} />
 						</ChainOfThoughtContent>
 					</ChainOfThought>
 				</ScrollArea>

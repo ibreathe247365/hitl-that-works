@@ -1,15 +1,21 @@
 "use client";
 
-import type { Thread, Event } from "@hitl/ai";
+import type { Event, Thread } from "@hitl/ai";
 import { PlusIcon, TrashIcon } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
 // Utility function to safely stringify JSON with proper encoding
@@ -38,7 +44,7 @@ interface RedisStateEditorProps {
 
 const EVENT_TYPES = [
 	"human_response",
-	"request_more_information", 
+	"request_more_information",
 	"user_message",
 	"ai_response",
 	"assistant_message",
@@ -49,12 +55,19 @@ const EVENT_TYPES = [
 	"generic",
 ] as const;
 
-export function RedisStateEditor({ thread, onThreadChange }: RedisStateEditorProps) {
-	const [editingEventIndex, setEditingEventIndex] = useState<number | null>(null);
-	const [initialEmailInput, setInitialEmailInput] = useState<string>(
-		thread.initial_email ? safeStringify(thread.initial_email) : ""
+export function RedisStateEditor({
+	thread,
+	onThreadChange,
+}: RedisStateEditorProps) {
+	const [editingEventIndex, setEditingEventIndex] = useState<number | null>(
+		null,
 	);
-	const [eventDataInputs, setEventDataInputs] = useState<Record<number, string>>({});
+	const [initialEmailInput, setInitialEmailInput] = useState<string>(
+		thread.initial_email ? safeStringify(thread.initial_email) : "",
+	);
+	const [eventDataInputs, setEventDataInputs] = useState<
+		Record<number, string>
+	>({});
 
 	// Track if user is actively editing to prevent resets during refetch
 	const isEditingRef = useRef(false);
@@ -70,17 +83,19 @@ export function RedisStateEditor({ thread, onThreadChange }: RedisStateEditorPro
 		// Only update if the thread actually changed (not just a refetch of same data)
 		const currentThreadString = JSON.stringify(thread);
 		const lastThreadString = JSON.stringify(lastThreadRef.current);
-		
+
 		if (currentThreadString !== lastThreadString) {
-			setInitialEmailInput(thread.initial_email ? safeStringify(thread.initial_email) : "");
-			
+			setInitialEmailInput(
+				thread.initial_email ? safeStringify(thread.initial_email) : "",
+			);
+
 			// Initialize event data inputs
 			const inputs: Record<number, string> = {};
 			thread.events.forEach((event, index) => {
 				inputs[index] = safeStringify(event.data);
 			});
 			setEventDataInputs(inputs);
-			
+
 			lastThreadRef.current = thread;
 		}
 	}, [thread]);
@@ -114,7 +129,9 @@ export function RedisStateEditor({ thread, onThreadChange }: RedisStateEditorPro
 	const updateEvent = (index: number, updatedEvent: Event) => {
 		const updatedThread = {
 			...thread,
-			events: thread.events.map((event, i) => (i === index ? updatedEvent : event)),
+			events: thread.events.map((event, i) =>
+				i === index ? updatedEvent : event,
+			),
 		};
 		onThreadChange(updatedThread);
 	};
@@ -129,7 +146,7 @@ export function RedisStateEditor({ thread, onThreadChange }: RedisStateEditorPro
 				initial_email: parsed,
 			});
 		}
-		
+
 		// Reset editing flag after a short delay
 		setTimeout(() => {
 			isEditingRef.current = false;
@@ -159,7 +176,9 @@ export function RedisStateEditor({ thread, onThreadChange }: RedisStateEditorPro
 			<Card>
 				<CardHeader className="pb-3">
 					<div className="flex items-center justify-between">
-						<CardTitle className="text-sm">Events ({thread.events.length})</CardTitle>
+						<CardTitle className="text-sm">
+							Events ({thread.events.length})
+						</CardTitle>
 						<Button onClick={addEvent} size="sm" className="h-7 px-2 text-xs">
 							<PlusIcon className="mr-1 h-3 w-3" />
 							Add Event
@@ -171,18 +190,27 @@ export function RedisStateEditor({ thread, onThreadChange }: RedisStateEditorPro
 						<div className="space-y-3">
 							{thread.events.map((event, index) => (
 								<div key={index} className="rounded-md border bg-card p-3">
-									<div className="flex items-center justify-between mb-2">
+									<div className="mb-2 flex items-center justify-between">
 										<div className="flex items-center gap-2">
-											<Badge variant="outline" className="px-1.5 py-0.5 text-xs">
+											<Badge
+												variant="outline"
+												className="px-1.5 py-0.5 text-xs"
+											>
 												{event.type}
 											</Badge>
-											<span className="text-muted-foreground text-xs">#{index}</span>
+											<span className="text-muted-foreground text-xs">
+												#{index}
+											</span>
 										</div>
 										<div className="flex items-center gap-1">
 											<Button
 												variant="ghost"
 												size="sm"
-												onClick={() => setEditingEventIndex(editingEventIndex === index ? null : index)}
+												onClick={() =>
+													setEditingEventIndex(
+														editingEventIndex === index ? null : index,
+													)
+												}
 												className="h-6 px-2 text-xs"
 											>
 												{editingEventIndex === index ? "Done" : "Edit"}
@@ -201,7 +229,9 @@ export function RedisStateEditor({ thread, onThreadChange }: RedisStateEditorPro
 									{editingEventIndex === index ? (
 										<div className="space-y-3">
 											<div className="space-y-2">
-												<Label htmlFor={`event-type-${index}`}>Event Type</Label>
+												<Label htmlFor={`event-type-${index}`}>
+													Event Type
+												</Label>
 												<Select
 													value={event.type}
 													onValueChange={(value) =>
@@ -222,19 +252,26 @@ export function RedisStateEditor({ thread, onThreadChange }: RedisStateEditorPro
 											</div>
 
 											<div className="space-y-2">
-												<Label htmlFor={`event-data-${index}`}>Event Data</Label>
+												<Label htmlFor={`event-data-${index}`}>
+													Event Data
+												</Label>
 												<Textarea
 													id={`event-data-${index}`}
-													value={eventDataInputs[index] || safeStringify(event.data)}
+													value={
+														eventDataInputs[index] || safeStringify(event.data)
+													}
 													onChange={(e) => {
 														const value = e.target.value;
 														isEditingRef.current = true;
-														setEventDataInputs(prev => ({ ...prev, [index]: value }));
+														setEventDataInputs((prev) => ({
+															...prev,
+															[index]: value,
+														}));
 														const parsed = safeParse(value);
 														if (parsed !== null) {
 															updateEvent(index, { ...event, data: parsed });
 														}
-														
+
 														// Reset editing flag after a short delay
 														setTimeout(() => {
 															isEditingRef.current = false;

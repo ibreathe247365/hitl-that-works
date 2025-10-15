@@ -54,8 +54,6 @@ export async function enqueueWebhookProcessing(
 			? result.ids[0]
 			: `event_${Date.now()}`;
 
-
-
 	return jobId;
 }
 

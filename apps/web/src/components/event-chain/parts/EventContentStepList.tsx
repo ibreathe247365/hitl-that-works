@@ -11,9 +11,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { AIResponseStep } from "./events/AIResponse";
 import { AIStepStep } from "./events/AIStep";
+import { CalculateResultStep } from "./events/CalculateResult";
+import { ErrorEventStep } from "./events/Error";
+import { HumanContactSentStep } from "./events/HumanContactSent";
 import { HumanResponseStep } from "./events/HumanResponse";
+import {
+	CalculateIntentStep,
+	DoneForNowIntentStep,
+	NothingToDoIntentStep,
+} from "./events/IntentEvents";
 import { QueueEventStep } from "./events/QueueEvent";
 import { RequestMoreInformationStep } from "./events/RequestMoreInformation";
+import { ThreadCreatedStep } from "./events/ThreadCreated";
 import { ToolCallContent } from "./events/ToolCall";
 import { UserMessageStep } from "./events/UserMessage";
 import {
@@ -22,15 +31,6 @@ import {
 } from "./events/WebhookEvents";
 import { WebhookProcessedStep } from "./events/WebhookProcessed";
 import { getEventStatusBlinkClass, getEventStatusColor } from "./utils";
-import { ThreadCreatedStep } from "./events/ThreadCreated";
-import {
-    CalculateIntentStep,
-    DoneForNowIntentStep,
-    NothingToDoIntentStep,
-} from "./events/IntentEvents";
-import { CalculateResultStep } from "./events/CalculateResult";
-import { ErrorEventStep } from "./events/Error";
-import { HumanContactSentStep } from "./events/HumanContactSent";
 
 export function EventContentStepList({
 	events,
@@ -41,8 +41,8 @@ export function EventContentStepList({
 		<>
 			{events.map((currentEvent, index) => {
 				switch (currentEvent.type) {
-                    case "thread_created":
-                        return <ThreadCreatedStep key={index} event={currentEvent} />;
+					case "thread_created":
+						return <ThreadCreatedStep key={index} event={currentEvent} />;
 					case "human_response":
 						return <HumanResponseStep key={index} event={currentEvent} />;
 					case "request_more_information":
@@ -51,8 +51,8 @@ export function EventContentStepList({
 						);
 					case "user_message":
 						return <UserMessageStep key={index} event={currentEvent} />;
-                    case "error":
-                        return <ErrorEventStep key={index} event={currentEvent} />;
+					case "error":
+						return <ErrorEventStep key={index} event={currentEvent} />;
 					case "tool_call":
 					case "function_call":
 						return <ToolCallContent key={index} event={currentEvent} />;
@@ -69,16 +69,16 @@ export function EventContentStepList({
 						return <WebhookReceivedStep key={index} event={currentEvent} />;
 					case "webhook":
 						return <WebhookOperationStep key={index} event={currentEvent} />;
-                    case "calculate":
-                        return <CalculateIntentStep key={index} event={currentEvent} />;
-                    case "done_for_now":
-                        return <DoneForNowIntentStep key={index} event={currentEvent} />;
-                    case "nothing_to_do":
-                        return <NothingToDoIntentStep key={index} event={currentEvent} />;
-                    case "calculate_result":
-                        return <CalculateResultStep key={index} event={currentEvent} />;
-                    case "human_contact_sent":
-                        return <HumanContactSentStep key={index} event={currentEvent} />;
+					case "calculate":
+						return <CalculateIntentStep key={index} event={currentEvent} />;
+					case "done_for_now":
+						return <DoneForNowIntentStep key={index} event={currentEvent} />;
+					case "nothing_to_do":
+						return <NothingToDoIntentStep key={index} event={currentEvent} />;
+					case "calculate_result":
+						return <CalculateResultStep key={index} event={currentEvent} />;
+					case "human_contact_sent":
+						return <HumanContactSentStep key={index} event={currentEvent} />;
 					default:
 						return (
 							<Task key={index} defaultOpen={currentEvent.type === "ai_step"}>

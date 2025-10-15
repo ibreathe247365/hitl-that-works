@@ -25,9 +25,9 @@ export const verifyWebhookSignature = (
 	// 		"svix-signature": headers.get("svix-signature") as string,
 	// 	});
 	// 	return true;
-    // } catch (_err) {
-    // 	return false;
-    // }
+	// } catch (_err) {
+	// 	return false;
+	// }
 };
 
 export const createErrorResponse = (
@@ -78,11 +78,11 @@ export const getThreadFromPayload = async (
 	if (stateId) {
 		try {
 			const thread = await getThreadState(stateId);
-            if (!thread) {
+			if (!thread) {
 				return { events: [] };
 			}
 			return thread;
-        } catch (_error) {
+		} catch (_error) {
 			return { events: [] };
 		}
 	}

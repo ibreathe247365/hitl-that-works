@@ -93,8 +93,7 @@ export async function ensureThreadState(
 				data: { message: "Thread created", userId },
 				userId: userId,
 			});
-		} catch (_error) {
-		}
+		} catch (_error) {}
 	}
 
 	return finalStateId;

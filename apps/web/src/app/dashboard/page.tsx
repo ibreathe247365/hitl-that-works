@@ -46,7 +46,7 @@ export default function ThreadListPage() {
 							setHighlightedThreadId(null);
 						}, 3000);
 					}
-					} catch (_error) {
+				} catch (_error) {
 					sessionStorage.removeItem("pendingMessage");
 				}
 			}

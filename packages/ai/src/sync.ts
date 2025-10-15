@@ -82,7 +82,7 @@ export function addThreadEvent(
 		data: event.data,
 		initialEmail,
 		userId,
-    }).catch((_err: any) => {});
+	}).catch((_err: any) => {});
 }
 
 export function syncLatestEventToConvex(

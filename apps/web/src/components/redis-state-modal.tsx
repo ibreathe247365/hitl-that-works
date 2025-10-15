@@ -1,6 +1,6 @@
 "use client";
 
-import type { ThreadStateWithMetadata, Thread } from "@hitl/ai";
+import type { Thread, ThreadStateWithMetadata } from "@hitl/ai";
 import { SaveIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -29,7 +29,7 @@ export function RedisStateModal({
 	mode,
 }: RedisStateModalProps) {
 	const [editedState, setEditedState] = useState<string>(
-		JSON.stringify(state, null, 2)
+		JSON.stringify(state, null, 2),
 	);
 	const [isSaving, setIsSaving] = useState(false);
 	const [currentMode, setCurrentMode] = useState<"json" | "form">(mode);
@@ -73,7 +73,10 @@ export function RedisStateModal({
 			toast.success("State updated successfully");
 			onSaveSuccess();
 		} catch (error) {
-			toast.error("Failed to save state: " + (error instanceof Error ? error.message : "Unknown error"));
+			toast.error(
+				"Failed to save state: " +
+					(error instanceof Error ? error.message : "Unknown error"),
+			);
 		} finally {
 			setIsSaving(false);
 		}
@@ -81,9 +84,9 @@ export function RedisStateModal({
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-			<Card className="w-full max-w-6xl h-[90vh] flex flex-col">
-				<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 flex-shrink-0">
-					<CardTitle className="text-lg font-semibold">
+			<Card className="flex h-[90vh] w-full max-w-6xl flex-col">
+				<CardHeader className="flex flex-shrink-0 flex-row items-center justify-between space-y-0 pb-4">
+					<CardTitle className="font-semibold text-lg">
 						Edit Agent State
 					</CardTitle>
 					<Button
@@ -95,36 +98,51 @@ export function RedisStateModal({
 						<XIcon className="h-4 w-4" />
 					</Button>
 				</CardHeader>
-				<CardContent className="flex-1 flex flex-col min-h-0 p-6 pt-0">
-					<Tabs value={currentMode} onValueChange={(value) => setCurrentMode(value as "json" | "form")} className="flex-1 flex flex-col min-h-0">
-						<TabsList className="grid w-full grid-cols-2 flex-shrink-0">
+				<CardContent className="flex min-h-0 flex-1 flex-col p-6 pt-0">
+					<Tabs
+						value={currentMode}
+						onValueChange={(value) => setCurrentMode(value as "json" | "form")}
+						className="flex min-h-0 flex-1 flex-col"
+					>
+						<TabsList className="grid w-full flex-shrink-0 grid-cols-2">
 							<TabsTrigger value="json">JSON Editor</TabsTrigger>
 							<TabsTrigger value="form">Form Editor</TabsTrigger>
 						</TabsList>
 
-						<TabsContent value="json" className="flex-1 flex flex-col min-h-0 mt-4">
-							<div className="flex-1 flex flex-col min-h-0 space-y-2">
-								<label className="text-sm font-medium flex-shrink-0">State Data (JSON)</label>
-								<div className="flex-1 min-h-0">
+						<TabsContent
+							value="json"
+							className="mt-4 flex min-h-0 flex-1 flex-col"
+						>
+							<div className="flex min-h-0 flex-1 flex-col space-y-2">
+								<label className="flex-shrink-0 font-medium text-sm">
+									State Data (JSON)
+								</label>
+								<div className="min-h-0 flex-1">
 									<ScrollArea className="h-full">
 										<Textarea
 											value={editedState}
 											onChange={(e) => setEditedState(e.target.value)}
-											className="min-h-full font-mono text-sm resize-none border-0 focus-visible:ring-0"
+											className="min-h-full resize-none border-0 font-mono text-sm focus-visible:ring-0"
 											placeholder="Edit the JSON state data..."
 										/>
 									</ScrollArea>
 								</div>
-								<p className="text-muted-foreground text-xs flex-shrink-0">
-									⚠️ Warning: Editing the state will trigger AI re-evaluation. Make sure the JSON is valid.
+								<p className="flex-shrink-0 text-muted-foreground text-xs">
+									⚠️ Warning: Editing the state will trigger AI re-evaluation.
+									Make sure the JSON is valid.
 								</p>
 							</div>
 						</TabsContent>
 
-						<TabsContent value="form" className="flex-1 flex flex-col min-h-0 mt-4">
-							<div className="flex-1 flex flex-col min-h-0 space-y-2">
-								<label className="text-sm font-medium flex-shrink-0">State Data (Form)</label>
-								<div className="flex-1 min-h-0">
+						<TabsContent
+							value="form"
+							className="mt-4 flex min-h-0 flex-1 flex-col"
+						>
+							<div className="flex min-h-0 flex-1 flex-col space-y-2">
+								<label className="flex-shrink-0 font-medium text-sm">
+									State Data (Form)
+								</label>
+								<div className="min-h-0 flex-1">
 									<ScrollArea className="h-full">
 										<RedisStateEditor
 											thread={state.thread}
@@ -132,19 +150,21 @@ export function RedisStateModal({
 										/>
 									</ScrollArea>
 								</div>
-								<p className="text-muted-foreground text-xs flex-shrink-0">
+								<p className="flex-shrink-0 text-muted-foreground text-xs">
 									⚠️ Warning: Editing the state will trigger AI re-evaluation.
 								</p>
 							</div>
 						</TabsContent>
 					</Tabs>
 
-					<div className="flex justify-end space-x-2 pt-4 border-t flex-shrink-0">
+					<div className="flex flex-shrink-0 justify-end space-x-2 border-t pt-4">
 						<Button variant="outline" onClick={onClose} disabled={isSaving}>
 							Cancel
 						</Button>
 						<Button onClick={handleSave} disabled={isSaving}>
-							<SaveIcon className={`mr-2 h-4 w-4 ${isSaving ? "animate-spin" : ""}`} />
+							<SaveIcon
+								className={`mr-2 h-4 w-4 ${isSaving ? "animate-spin" : ""}`}
+							/>
 							{isSaving ? "Saving..." : "Save Changes"}
 						</Button>
 					</div>

@@ -11,27 +11,19 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
 const convexSiteUrl = process.env.CONVEX_SITE_URL || "";
 
 function toOrigin(url: string): string | null {
-  try {
-    const u = new URL(url);
-    return `${u.protocol}//${u.host}`;
-  } catch {
-    return null;
-  }
+	try {
+		const u = new URL(url);
+		return `${u.protocol}//${u.host}`;
+	} catch {
+		return null;
+	}
 }
 
-const defaultLocalOrigins = [
-  "http://localhost:3001",
-  "http://127.0.0.1:3001",
-];
+const defaultLocalOrigins = ["http://localhost:3001", "http://127.0.0.1:3001"];
 
-const trustedOrigins = [
-  siteUrl,
-  appUrl,
-  convexSiteUrl,
-  ...defaultLocalOrigins,
-]
-  .map((u) => u && toOrigin(u))
-  .filter((u): u is string => Boolean(u));
+const trustedOrigins = [siteUrl, appUrl, convexSiteUrl, ...defaultLocalOrigins]
+	.map((u) => u && toOrigin(u))
+	.filter((u): u is string => Boolean(u));
 
 export const authComponent = createClient<DataModel>(components.betterAuth);
 
@@ -54,7 +46,7 @@ export const createAuth = (
 		},
 		socialProviders: {
 			google: {
-				prompt: "select_account", 
+				prompt: "select_account",
 				clientId: process.env.GOOGLE_CLIENT_ID!,
 				clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
 			},

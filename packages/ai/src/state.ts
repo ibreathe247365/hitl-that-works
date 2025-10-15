@@ -70,7 +70,6 @@ export async function getThreadStateWithMetadata(
 ): Promise<ThreadStateWithMetadata | null> {
 	const state = await redis.get<string>(stateId);
 	if (!state) return null;
-	
 
 	try {
 		return ThreadStateWithMetadataSchema.parse(state);

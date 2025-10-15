@@ -1,19 +1,22 @@
-import { getThreadStateWithMetadata, updateThreadState } from "@hitl/ai";
-import { enqueueWebhookProcessing, addThreadEvent } from "@hitl/ai";
-import { RollbackAgentEventSchema, ThreadSchema } from "@hitl/ai";
-import { z } from "zod";
+import {
+	addThreadEvent,
+	enqueueWebhookProcessing,
+	getThreadStateWithMetadata,
+	RollbackAgentEventSchema,
+	ThreadSchema,
+	updateThreadState,
+} from "@hitl/ai";
 import { type NextRequest, NextResponse } from "next/server";
- 
+import { z } from "zod";
 
 const UpdateStateRequestSchema = z.object({
 	thread: ThreadSchema,
 });
 
 export async function GET(
-    _request: NextRequest,
-    { params }: { params: Promise<{ stateId: string }> },
+	_request: NextRequest,
+	{ params }: { params: Promise<{ stateId: string }> },
 ) {
-
 	try {
 		const { stateId } = await params;
 
@@ -24,27 +27,26 @@ export async function GET(
 			);
 		}
 
-        const threadState = await getThreadStateWithMetadata(stateId);
+		const threadState = await getThreadStateWithMetadata(stateId);
 
-        if (!threadState) {
-            return NextResponse.json({ thread: { events: [] } });
-        }
+		if (!threadState) {
+			return NextResponse.json({ thread: { events: [] } });
+		}
 
 		return NextResponse.json(threadState);
-    } catch (_error) {
+	} catch (_error) {
 		return NextResponse.json({ thread: { events: [] } });
 	}
 }
 
 export async function PUT(
-    request: NextRequest,
-    { params }: { params: Promise<{ stateId: string }> },
+	request: NextRequest,
+	{ params }: { params: Promise<{ stateId: string }> },
 ) {
-
 	try {
 		const { stateId } = await params;
 
-        if (!stateId) {
+		if (!stateId) {
 			return NextResponse.json(
 				{ error: "StateId is required" },
 				{ status: 400 },
@@ -52,16 +54,16 @@ export async function PUT(
 		}
 
 		const body = await request.json();
-		
-        const validationResult = UpdateStateRequestSchema.safeParse(body);
-        if (!validationResult.success) {
+
+		const validationResult = UpdateStateRequestSchema.safeParse(body);
+		if (!validationResult.success) {
 			return NextResponse.json(
-				{ 
+				{
 					error: "Invalid request body format",
-					details: validationResult.error.issues.map(issue => ({
+					details: validationResult.error.issues.map((issue) => ({
 						field: issue.path.join("."),
 						message: issue.message,
-					}))
+					})),
 				},
 				{ status: 400 },
 			);
@@ -69,41 +71,43 @@ export async function PUT(
 
 		const { thread } = validationResult.data;
 
-        await updateThreadState(stateId, thread);
+		await updateThreadState(stateId, thread);
 
 		const rollbackEventData = {
 			type: "rollback-agent" as const,
 			data: {
-				message: "The human made changes to the context, re-evaluate with this changed information",
+				message:
+					"The human made changes to the context, re-evaluate with this changed information",
 				timestamp: new Date().toISOString(),
 			},
 		};
 
 		const rollbackEvent = RollbackAgentEventSchema.parse(rollbackEventData);
 
-        await Promise.resolve(addThreadEvent(stateId, rollbackEvent));
+		await Promise.resolve(addThreadEvent(stateId, rollbackEvent));
 
-        const jobId = await enqueueWebhookProcessing(
-				{
-					type: "human_contact.completed",
-					event: {
-						status: {
-							response: "The human made changes to the context, re-evaluate with this changed information",
-						},
-						state: {
-							stateId: stateId,
-						},
+		const jobId = await enqueueWebhookProcessing(
+			{
+				type: "human_contact.completed",
+				event: {
+					status: {
+						response:
+							"The human made changes to the context, re-evaluate with this changed information",
+					},
+					state: {
+						stateId: stateId,
 					},
 				},
-                stateId,
-        );
+			},
+			stateId,
+		);
 
-		return NextResponse.json({ 
-			success: true, 
+		return NextResponse.json({
+			success: true,
 			jobId,
-			message: "State updated and webhook queued successfully" 
+			message: "State updated and webhook queued successfully",
 		});
-    } catch (_error) {
+	} catch (_error) {
 		return NextResponse.json(
 			{ error: "Failed to update thread state" },
 			{ status: 500 },

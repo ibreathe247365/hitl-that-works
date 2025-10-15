@@ -54,10 +54,6 @@ export async function POST(request: NextRequest) {
 			jobId: result.jobId,
 		});
 	} catch (_error) {
-		return createErrorResponse(
-			"Failed to send message",
-			"Unknown error",
-			500,
-		);
+		return createErrorResponse("Failed to send message", "Unknown error", 500);
 	}
 }

@@ -41,14 +41,14 @@ const functionHandlers: Record<
 	(thread: Thread, kwargs: FunctionKwargs) => Promise<Thread>
 > = {
 	promote_vercel_deployment: async (thread, _kwargs) => {
-			// const typedKwargs = kwargs as VercelDeploymentKwargs;
+		// const typedKwargs = kwargs as VercelDeploymentKwargs;
 
 		return await appendResult(thread, async () => ({
 			status: "vercel deployment promotion not implemented yet",
 		}));
 	},
 	tag_push_prod: async (thread, _kwargs) => {
-			// const typedKwargs = kwargs as TagPushProdKwargs;
+		// const typedKwargs = kwargs as TagPushProdKwargs;
 
 		return await appendResult(thread, async () => ({
 			status: "tag and push to prod not implemented yet",
@@ -108,7 +108,8 @@ const appendResult = async (
 			data: result,
 		});
 	} catch (_error) {
-		const errorMessage = _error instanceof Error ? _error.message : String(_error);
+		const errorMessage =
+			_error instanceof Error ? _error.message : String(_error);
 		const errorEvent = await b.SquashResponseContext(
 			threadToPrompt(thread),
 			`error running ${thread.events.slice(-1)[0]?.type}: ${errorMessage}`,
@@ -153,7 +154,7 @@ const _handleNextStep = async (
 			);
 
 			const emailAddress = getEmailFromThread(thread);
-            if (!emailAddress) {
+			if (!emailAddress) {
 				thread.events.push({
 					type: "error",
 					data: "No email address found in thread for human contact",
@@ -182,7 +183,7 @@ const _handleNextStep = async (
 					result: { message: nextStep.message },
 				});
 			}
-																
+
 			return false;
 		}
 
@@ -195,7 +196,7 @@ const _handleNextStep = async (
 			);
 
 			const emailAddress = getEmailFromThread(thread);
-            if (!emailAddress) {
+			if (!emailAddress) {
 				thread.events.push({
 					type: "error",
 					data: "No email address found in thread for human contact",
@@ -224,7 +225,7 @@ const _handleNextStep = async (
 					result: { message: nextStep.message },
 				});
 			}
-			
+
 			return false;
 		}
 
@@ -239,7 +240,6 @@ const _handleNextStep = async (
 			return false;
 
 		case "await":
-
 			return await appendResult(thread, async () => {
 				await new Promise((resolve) =>
 					setTimeout(resolve, nextStep.seconds * 1000),
@@ -330,14 +330,10 @@ export const handleNextStep = async (
 	thread: Thread,
 	stateId?: string,
 ): Promise<void> => {
-
-
 	let nextThread: Thread | false = thread;
 
 	while (true) {
 		const nextStep = await b.DetermineNextStep(threadToPrompt(nextThread));
-
-
 
 		nextThread = await _handleNextStep(thread, nextStep, stateId);
 		if (!nextThread) {

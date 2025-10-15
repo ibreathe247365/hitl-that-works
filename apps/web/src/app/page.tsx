@@ -11,9 +11,9 @@ import {
 	PromptInputToolbar,
 } from "@/components/ai-elements/prompt-input";
 import { Logo } from "@/components/logo";
+import { ModeToggle } from "@/components/mode-toggle";
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/mode-toggle";
 
 function AppPromptInput() {
 	const router = useRouter();
@@ -91,7 +91,7 @@ export default function Home() {
 							<h1 className="font-bold text-4xl text-foreground drop-shadow-lg dark:text-white">
 								HITL = Humans + AI
 							</h1>
-							<p className="text-lg text-foreground/90 drop-shadow-md dark:text-white/95">
+							<p className="text-foreground/90 text-lg drop-shadow-md dark:text-white/95">
 								Intelligent AI agents that know when to pause and collaborate
 								with humans.
 							</p>
@@ -103,7 +103,7 @@ export default function Home() {
 					</div>
 				</div>
 
-				<div className="-translate-x-1/2 absolute bottom-6 left-1/2 transform text-sm text-foreground/70 drop-shadow-sm dark:text-white/80">
+				<div className="-translate-x-1/2 absolute bottom-6 left-1/2 transform text-foreground/70 text-sm drop-shadow-sm dark:text-white/80">
 					made with {"<3"} by samir
 				</div>
 			</div>

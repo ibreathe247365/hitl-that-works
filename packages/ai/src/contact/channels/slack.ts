@@ -88,91 +88,91 @@ export function createSlackWebhookPayload(slackEvent: any): WebhookPayload {
  * Falls back to posting plain text if blocks fail.
  */
 export async function sendSlackFunctionApprovalRequest(
-  message: string,
-  channel: SlackContactChannel,
-  stateId: string,
-  fn: string,
-  kwargs: any,
+	message: string,
+	channel: SlackContactChannel,
+	stateId: string,
+	fn: string,
+	kwargs: any,
 ): Promise<SlackContactResult> {
-  try {
-    const webhookUrl = process.env.SLACK_INCOMING_WEBHOOK_URL;
-    if (!webhookUrl) {
-      throw new Error("Missing SLACK_INCOMING_WEBHOOK_URL env var");
-    }
+	try {
+		const webhookUrl = process.env.SLACK_INCOMING_WEBHOOK_URL;
+		if (!webhookUrl) {
+			throw new Error("Missing SLACK_INCOMING_WEBHOOK_URL env var");
+		}
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
-    const encodedKwargs = encodeURIComponent(JSON.stringify(kwargs ?? {}));
-    const approveUrl = `${baseUrl}/api/webhooks/human-response?action=approve&stateId=${encodeURIComponent(
-      stateId,
-    )}&fn=${encodeURIComponent(fn)}&kwargs=${encodedKwargs}`;
-    const denyUrl = `${baseUrl}/api/webhooks/human-response?action=deny&stateId=${encodeURIComponent(
-      stateId,
-    )}&fn=${encodeURIComponent(fn)}&kwargs=${encodedKwargs}`;
-    const customUrl = `${baseUrl}/api/webhooks/human-response/custom?stateId=${encodeURIComponent(
-      stateId,
-    )}&fn=${encodeURIComponent(fn)}&kwargs=${encodedKwargs}`;
+		const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+		const encodedKwargs = encodeURIComponent(JSON.stringify(kwargs ?? {}));
+		const approveUrl = `${baseUrl}/api/webhooks/human-response?action=approve&stateId=${encodeURIComponent(
+			stateId,
+		)}&fn=${encodeURIComponent(fn)}&kwargs=${encodedKwargs}`;
+		const denyUrl = `${baseUrl}/api/webhooks/human-response?action=deny&stateId=${encodeURIComponent(
+			stateId,
+		)}&fn=${encodeURIComponent(fn)}&kwargs=${encodedKwargs}`;
+		const customUrl = `${baseUrl}/api/webhooks/human-response/custom?stateId=${encodeURIComponent(
+			stateId,
+		)}&fn=${encodeURIComponent(fn)}&kwargs=${encodedKwargs}`;
 
-    const payload = {
-      text: message,
-      blocks: [
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: `${message}\n\n_Thread ID: ${stateId}_`,
-          },
-        },
-        {
-          type: "actions",
-          elements: [
-            {
-              type: "button",
-              text: { type: "plain_text", text: "Approve" },
-              style: "primary",
-              url: approveUrl,
-            },
-            {
-              type: "button",
-              text: { type: "plain_text", text: "Deny" },
-              style: "danger",
-              url: denyUrl,
-            },
-            {
-              type: "button",
-              text: { type: "plain_text", text: "Custom…" },
-              url: customUrl,
-            },
-          ],
-        },
-      ],
-    } as const;
+		const payload = {
+			text: message,
+			blocks: [
+				{
+					type: "section",
+					text: {
+						type: "mrkdwn",
+						text: `${message}\n\n_Thread ID: ${stateId}_`,
+					},
+				},
+				{
+					type: "actions",
+					elements: [
+						{
+							type: "button",
+							text: { type: "plain_text", text: "Approve" },
+							style: "primary",
+							url: approveUrl,
+						},
+						{
+							type: "button",
+							text: { type: "plain_text", text: "Deny" },
+							style: "danger",
+							url: denyUrl,
+						},
+						{
+							type: "button",
+							text: { type: "plain_text", text: "Custom…" },
+							url: customUrl,
+						},
+					],
+				},
+			],
+		} as const;
 
-    const res = await fetch(webhookUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+		const res = await fetch(webhookUrl, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(payload),
+		});
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      throw new Error(`Slack webhook error: ${res.status} ${text}`);
-    }
+		if (!res.ok) {
+			const text = await res.text().catch(() => "");
+			throw new Error(`Slack webhook error: ${res.status} ${text}`);
+		}
 
-    return {
-      success: true,
-      channelType: "slack",
-      messageId: `${Date.now()}`,
-      channelId: (channel as any)?.slack?.channel_id || "webhook",
-      timestamp: new Date().toISOString(),
-    };
-  } catch (error) {
-    return {
-      success: false,
-      channelType: "slack",
-      messageId: "error",
-      channelId: (channel as any)?.slack?.channel_id || "webhook",
-      error: error instanceof Error ? error.message : "Unknown error",
-      timestamp: new Date().toISOString(),
-    };
-  }
+		return {
+			success: true,
+			channelType: "slack",
+			messageId: `${Date.now()}`,
+			channelId: (channel as any)?.slack?.channel_id || "webhook",
+			timestamp: new Date().toISOString(),
+		};
+	} catch (error) {
+		return {
+			success: false,
+			channelType: "slack",
+			messageId: "error",
+			channelId: (channel as any)?.slack?.channel_id || "webhook",
+			error: error instanceof Error ? error.message : "Unknown error",
+			timestamp: new Date().toISOString(),
+		};
+	}
 }

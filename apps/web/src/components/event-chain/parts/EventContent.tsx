@@ -11,9 +11,18 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { AIResponseContent } from "./events/AIResponse";
 import { AIStepContent } from "./events/AIStep";
+import { CalculateResultContent } from "./events/CalculateResult";
+import { ErrorEventContent } from "./events/Error";
+import { HumanContactSentContent } from "./events/HumanContactSent";
 import { HumanResponseContent } from "./events/HumanResponse";
+import {
+	CalculateIntentContent,
+	DoneForNowIntentContent,
+	NothingToDoIntentContent,
+} from "./events/IntentEvents";
 import { QueueEventContent } from "./events/QueueEvent";
 import { RequestMoreInformationContent } from "./events/RequestMoreInformation";
+import { ThreadCreatedContent } from "./events/ThreadCreated";
 import { ToolCallContent } from "./events/ToolCall";
 import { UserMessageContent } from "./events/UserMessage";
 import {
@@ -21,15 +30,6 @@ import {
 	WebhookReceivedContent,
 } from "./events/WebhookEvents";
 import { WebhookProcessedContent } from "./events/WebhookProcessed";
-import { ThreadCreatedContent } from "./events/ThreadCreated";
-import {
-    CalculateIntentContent,
-    DoneForNowIntentContent,
-    NothingToDoIntentContent,
-} from "./events/IntentEvents";
-import { CalculateResultContent } from "./events/CalculateResult";
-import { ErrorEventContent } from "./events/Error";
-import { HumanContactSentContent } from "./events/HumanContactSent";
 import {
 	getEventLabel,
 	getEventStatusBlinkClass,
@@ -38,16 +38,16 @@ import {
 
 export function EventContent({ event }: { event: Event }): ReactElement {
 	switch (event.type) {
-        case "thread_created":
-            return <ThreadCreatedContent event={event} />;
+		case "thread_created":
+			return <ThreadCreatedContent event={event} />;
 		case "human_response":
 			return <HumanResponseContent event={event} />;
 		case "request_more_information":
 			return <RequestMoreInformationContent event={event} />;
 		case "user_message":
 			return <UserMessageContent event={event} />;
-        case "error":
-            return <ErrorEventContent event={event} />;
+		case "error":
+			return <ErrorEventContent event={event} />;
 		case "tool_call":
 		case "function_call":
 			return <ToolCallContent event={event} />;
@@ -64,16 +64,16 @@ export function EventContent({ event }: { event: Event }): ReactElement {
 			return <WebhookReceivedContent event={event} />;
 		case "webhook":
 			return <WebhookOperationContent event={event} />;
-        case "calculate":
-            return <CalculateIntentContent event={event} />;
-        case "done_for_now":
-            return <DoneForNowIntentContent event={event} />;
-        case "nothing_to_do":
-            return <NothingToDoIntentContent event={event} />;
-        case "calculate_result":
-            return <CalculateResultContent event={event} />;
-        case "human_contact_sent":
-            return <HumanContactSentContent event={event} />;
+		case "calculate":
+			return <CalculateIntentContent event={event} />;
+		case "done_for_now":
+			return <DoneForNowIntentContent event={event} />;
+		case "nothing_to_do":
+			return <NothingToDoIntentContent event={event} />;
+		case "calculate_result":
+			return <CalculateResultContent event={event} />;
+		case "human_contact_sent":
+			return <HumanContactSentContent event={event} />;
 		default:
 			return (
 				<pre className="overflow-x-auto rounded-lg border bg-muted p-3 text-xs">
