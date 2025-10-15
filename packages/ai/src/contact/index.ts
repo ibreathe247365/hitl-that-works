@@ -22,6 +22,9 @@ export * from "./schemas";
 // Re-export all types and schemas
 export * from "./types";
 
+// Email approvals export
+export { sendEmailFunctionApprovalRequest } from "./channels/email";
+
 /**
  * Send a message via one or more contact channels
  * @param message The message to send

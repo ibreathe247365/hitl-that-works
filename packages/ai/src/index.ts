@@ -5,6 +5,7 @@ export {
 	createHumanContact,
 	createSlackWebhookPayload,
 	sendEmail,
+	sendEmailFunctionApprovalRequest,
 	sendSlack,
 	sendSlackFunctionApprovalRequest,
 	sendWebhook,

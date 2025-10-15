@@ -64,3 +64,23 @@ hitl/
 - `pnpm dev:setup`: Setup and configure your Convex project
 - `pnpm check-types`: Check TypeScript types across all apps
 - `pnpm check`: Run Biome formatting and linting
+
+## Email approvals (Slack-like)
+
+To enable email-based approvals mirroring Slack buttons:
+
+- Required env:
+  - `RESEND_API_KEY`
+  - `NEXT_PUBLIC_APP_URL` (e.g. `https://your.app`)
+- Usage:
+  - Call `sendEmailFunctionApprovalRequest(message, { email: { address } }, stateId, fn, kwargs)` from `@hitl/ai`.
+  - Approve/Deny/Custom links route to `/api/webhooks/human-response` which enqueues a `function_call.completed` event.
+  - Replies to the email can be ingested to produce `human_contact.completed` via `createEmailWebhookPayload`.
+
+Dev test endpoint:
+
+POST `apps/web/src/app/api/test-email/route.ts` with JSON:
+
+```json
+{ "stateId": "test-state-id", "fn": "example_function", "kwargs": { "k": true }, "message": "Please approve." }
+```

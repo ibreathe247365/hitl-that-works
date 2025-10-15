@@ -164,12 +164,19 @@ const _handleNextStep = async (
 
 			const contactDelivery = await createHumanContact(
 				nextStep.message,
-				{
-					email: {
-						address: emailAddress,
-						subject: "AI Agent Task Completed",
+				[
+					{
+						email: {
+							address: emailAddress,
+							subject: "AI Agent Task Completed",
+						},
 					},
-				},
+					{
+						slack: {
+							channel_id: "webhook",
+						},
+					},
+				],
 				currentStateId,
 			);
 
@@ -206,12 +213,19 @@ const _handleNextStep = async (
 
 			const contactDelivery = await createHumanContact(
 				nextStep.message,
-				{
-					email: {
-						address: emailAddress,
-						subject: "AI Agent Needs Clarification",
+				[
+					{
+						email: {
+							address: emailAddress,
+							subject: "AI Agent Needs Clarification",
+						},
 					},
-				},
+					{
+						slack: {
+							channel_id: "webhook",
+						},
+					},
+				],
 				currentStateId,
 			);
 
