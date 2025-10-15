@@ -6,6 +6,7 @@ export {
 	createSlackWebhookPayload,
 	sendEmail,
 	sendSlack,
+	sendSlackFunctionApprovalRequest,
 	sendWebhook,
 } from "./contact";
 export type {

@@ -378,9 +378,9 @@ function useBamlAction<FunctionName extends FunctionNames>(
  * // Streaming usage:
  * const { data, streamData, isLoading, error, mutate } = useDetermineNextStep({
  *   stream: true | undefined,
- *   onStreamData: (partial) => console.log('Partial update:', partial),
- *   onFinalData: (final) => console.log('Final result:', final),
- *   onError: (err) => console.error('Error:', err),
+ *   onStreamData: (partial) => {},
+ *   onFinalData: (final) => {},
+ *   onError: (err) => {},
  * });
  * ```
  */
@@ -428,9 +428,9 @@ export function useDetermineNextStep(
  * // Streaming usage:
  * const { data, streamData, isLoading, error, mutate } = usePerformCalculation({
  *   stream: true | undefined,
- *   onStreamData: (partial) => console.log('Partial update:', partial),
- *   onFinalData: (final) => console.log('Final result:', final),
- *   onError: (err) => console.error('Error:', err),
+ *   onStreamData: (partial) => {},
+ *   onFinalData: (final) => {},
+ *   onError: (err) => {},
  * });
  * ```
  */
@@ -480,9 +480,9 @@ export function usePerformCalculation(
  * // Streaming usage:
  * const { data, streamData, isLoading, error, mutate } = useSquashResponseContext({
  *   stream: true | undefined,
- *   onStreamData: (partial) => console.log('Partial update:', partial),
- *   onFinalData: (final) => console.log('Final result:', final),
- *   onError: (err) => console.error('Error:', err),
+ *   onStreamData: (partial) => {},
+ *   onFinalData: (final) => {},
+ *   onError: (err) => {},
  * });
  * ```
  */

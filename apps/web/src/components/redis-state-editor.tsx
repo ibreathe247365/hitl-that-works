@@ -16,8 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 const safeStringify = (obj: any): string => {
 	try {
 		return JSON.stringify(obj, null, 2);
-	} catch (error) {
-		console.warn("Failed to stringify object:", error);
+	} catch (_error) {
 		return "{}";
 	}
 };
@@ -27,8 +26,7 @@ const safeParse = (str: string): any => {
 	try {
 		const trimmed = str.trim();
 		return trimmed ? JSON.parse(trimmed) : null;
-	} catch (error) {
-		console.warn("Failed to parse JSON:", error);
+	} catch (_error) {
 		return null;
 	}
 };

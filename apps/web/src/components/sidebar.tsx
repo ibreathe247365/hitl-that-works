@@ -34,8 +34,7 @@ export function Sidebar() {
 			});
 
 			router.push(`/dashboard/threads/${stateId}`);
-		} catch (error) {
-			console.error("Failed to create thread:", error);
+		} catch (_error) {
 			toast.error("Failed to create thread");
 		}
 	};

@@ -73,7 +73,6 @@ export function RedisStateModal({
 			toast.success("State updated successfully");
 			onSaveSuccess();
 		} catch (error) {
-			console.error("Error saving state:", error);
 			toast.error("Failed to save state: " + (error instanceof Error ? error.message : "Unknown error"));
 		} finally {
 			setIsSaving(false);

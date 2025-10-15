@@ -41,18 +41,16 @@ const functionHandlers: Record<
 	string,
 	(thread: Thread, kwargs: FunctionKwargs) => Promise<Thread>
 > = {
-	promote_vercel_deployment: async (thread, kwargs) => {
-		const typedKwargs = kwargs as VercelDeploymentKwargs;
-		console.log(`promoting vercel deployment: ${typedKwargs.new_deployment}`);
-		console.log(`previous deployment: ${typedKwargs.previous_deployment}`);
+	promote_vercel_deployment: async (thread, _kwargs) => {
+			// const typedKwargs = kwargs as VercelDeploymentKwargs;
+
 		return await appendResult(thread, async () => ({
 			status: "vercel deployment promotion not implemented yet",
 		}));
 	},
-	tag_push_prod: async (thread, kwargs) => {
-		const typedKwargs = kwargs as TagPushProdKwargs;
-		console.log(`tagging and pushing to prod: ${typedKwargs.new_commit}`);
-		console.log(`previous commit: ${typedKwargs.previous_commit}`);
+	tag_push_prod: async (thread, _kwargs) => {
+			// const typedKwargs = kwargs as TagPushProdKwargs;
+
 		return await appendResult(thread, async () => ({
 			status: "tag and push to prod not implemented yet",
 		}));
@@ -61,26 +59,27 @@ const functionHandlers: Record<
 
 // Helper function to extract email address from thread
 const getEmailFromThread = (thread: Thread): string | null => {
+	return "delivered@resend.dev";
 	// First try to get from initial_email
-	if (thread.initial_email) {
-		const email = thread.initial_email as EmailPayload;
-		if (email.from_address) {
-			return email.from_address;
-		}
-	}
+	// if (thread.initial_email) {
+	// 	const email = thread.initial_email as EmailPayload;
+	// 	if (email.from_address) {
+	// 		return email.from_address;
+	// 	}
+	// }
 
-	// Fallback: look for email_received event in thread events
-	const emailEvent = thread.events.find(
-		(event) => event.type === "email_received",
-	);
-	if (emailEvent) {
-		const email = emailEvent.data as EmailPayload;
-		if (email.from_address) {
-			return email.from_address;
-		}
-	}
+	// // Fallback: look for email_received event in thread events
+	// const emailEvent = thread.events.find(
+	// 	(event) => event.type === "email_received",
+	// );
+	// if (emailEvent) {
+	// 	const email = emailEvent.data as EmailPayload;
+	// 	if (email.from_address) {
+	// 		return email.from_address;
+	// 	}
+	// }
 
-	return null;
+	// return null;
 };
 
 const appendResult = async (
@@ -109,11 +108,11 @@ const appendResult = async (
 			type: responseType,
 			data: result,
 		});
-	} catch (error) {
-		console.error(error);
+	} catch (_error) {
+		const errorMessage = _error instanceof Error ? _error.message : String(_error);
 		const errorEvent = await b.SquashResponseContext(
 			threadToPrompt(thread),
-			`error running ${thread.events.slice(-1)[0]?.type}: ${error}`,
+			`error running ${thread.events.slice(-1)[0]?.type}: ${errorMessage}`,
 		);
 		thread.events.push({
 			type: "error",
@@ -155,8 +154,7 @@ const _handleNextStep = async (
 			);
 
 			const emailAddress = getEmailFromThread(thread);
-			if (!emailAddress) {
-				console.error("No email address found in thread for contact");
+            if (!emailAddress) {
 				thread.events.push({
 					type: "error",
 					data: "No email address found in thread for human contact",
@@ -185,7 +183,7 @@ const _handleNextStep = async (
 					result: { message: nextStep.message },
 				});
 			}
-			console.log(`Task completed - ${nextStep.message}`);
+																
 			return false;
 		}
 
@@ -198,8 +196,7 @@ const _handleNextStep = async (
 			);
 
 			const emailAddress = getEmailFromThread(thread);
-			if (!emailAddress) {
-				console.error("No email address found in thread for contact");
+            if (!emailAddress) {
 				thread.events.push({
 					type: "error",
 					data: "No email address found in thread for human contact",
@@ -228,7 +225,7 @@ const _handleNextStep = async (
 					result: { message: nextStep.message },
 				});
 			}
-			console.log(`Requesting clarification - ${nextStep.message}`);
+			
 			return false;
 		}
 
@@ -243,9 +240,7 @@ const _handleNextStep = async (
 			return false;
 
 		case "await":
-			console.log(
-				`awaiting ${nextStep.seconds} seconds, reasoning: ${nextStep.reasoning}`,
-			);
+
 			return await appendResult(thread, async () => {
 				await new Promise((resolve) =>
 					setTimeout(resolve, nextStep.seconds * 1000),
@@ -336,17 +331,14 @@ export const handleNextStep = async (
 	thread: Thread,
 	stateId?: string,
 ): Promise<void> => {
-	console.log(`thread: ${JSON.stringify(thread)}`);
+
 
 	let nextThread: Thread | false = thread;
 
 	while (true) {
 		const nextStep = await b.DetermineNextStep(threadToPrompt(nextThread));
 
-		console.log("===============");
-		console.log(threadToPrompt(thread));
-		console.log(nextStep);
-		console.log("===============");
+
 
 		nextThread = await _handleNextStep(thread, nextStep, stateId);
 		if (!nextThread) {

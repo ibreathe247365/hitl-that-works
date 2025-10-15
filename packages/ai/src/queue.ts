@@ -54,10 +54,7 @@ export async function enqueueWebhookProcessing(
 			? result.ids[0]
 			: `event_${Date.now()}`;
 
-	console.log(`Enqueued webhook processing job: ${jobId}`, {
-		payloadType: webhookPayload.type,
-		threadStateId,
-	});
+
 
 	return jobId;
 }

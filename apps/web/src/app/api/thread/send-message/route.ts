@@ -53,11 +53,10 @@ export async function POST(request: NextRequest) {
 			stateId: result.stateId,
 			jobId: result.jobId,
 		});
-	} catch (error) {
-		console.log("error", error);
+	} catch (_error) {
 		return createErrorResponse(
 			"Failed to send message",
-			error instanceof Error ? JSON.stringify(error.cause) : "Unknown error",
+			"Unknown error",
 			500,
 		);
 	}

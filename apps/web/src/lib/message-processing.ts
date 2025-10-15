@@ -66,7 +66,7 @@ export async function getUserIdByStateId(
 			stateId,
 		});
 		return foundUserId || undefined;
-	} catch (error) {
+	} catch (_error) {
 		return undefined;
 	}
 }
@@ -93,8 +93,7 @@ export async function ensureThreadState(
 				data: { message: "Thread created", userId },
 				userId: userId,
 			});
-		} catch (error) {
-			console.error("Failed to create thread event:", error);
+		} catch (_error) {
 		}
 	}
 

@@ -1,7 +1,7 @@
 // Main contact system - unified interface for all contact channels
 
 import { sendEmail } from "./channels/email";
-import { sendSlack } from "./channels/slack";
+import { sendSlack, sendSlackFunctionApprovalRequest } from "./channels/slack";
 import { sendWebhook } from "./channels/webhook";
 import type {
 	ContactChannel,
@@ -12,7 +12,11 @@ import type {
 
 // Re-export channel-specific functions
 export { createEmailWebhookPayload, sendEmail } from "./channels/email";
-export { createSlackWebhookPayload, sendSlack } from "./channels/slack";
+export {
+	createSlackWebhookPayload,
+	sendSlack,
+	sendSlackFunctionApprovalRequest,
+} from "./channels/slack";
 export { sendWebhook } from "./channels/webhook";
 export * from "./schemas";
 // Re-export all types and schemas

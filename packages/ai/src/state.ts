@@ -60,8 +60,7 @@ export async function getThreadState(stateId: string): Promise<Thread | null> {
 	try {
 		const validated = ThreadStateWithMetadataSchema.parse(state);
 		return validated.thread;
-	} catch (error) {
-		console.error(`Failed to parse thread state ${stateId}:`, error);
+	} catch (_error) {
 		return null;
 	}
 }
@@ -71,15 +70,11 @@ export async function getThreadStateWithMetadata(
 ): Promise<ThreadStateWithMetadata | null> {
 	const state = await redis.get<string>(stateId);
 	if (!state) return null;
-	// console.log("state", JSON.stringify(state, null, 2));
+	
 
 	try {
 		return ThreadStateWithMetadataSchema.parse(state);
-	} catch (error) {
-		console.error(
-			`Failed to parse thread state with metadata ${stateId}:`,
-			error,
-		);
+	} catch (_error) {
 		return null;
 	}
 }

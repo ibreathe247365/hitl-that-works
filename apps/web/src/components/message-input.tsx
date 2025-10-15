@@ -46,8 +46,7 @@ export function MessageInput({ stateId, onMessageSent }: MessageInputProps) {
 
 			const result = await response.json();
 			onMessageSent?.(result.data.stateId);
-		} catch (error) {
-			console.error("Error sending message:", error);
+		} catch (_error) {
 		} finally {
 			setIsSubmitting(false);
 		}

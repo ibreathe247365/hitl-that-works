@@ -39,6 +39,9 @@
 			"correctness": {
 				"useExhaustiveDependencies": "info"
 			},
+			"suspicious": {
+				"noConsole": "error"
+			},
 			"nursery": {
 				"useSortedClasses": {
 					"level": "warn",

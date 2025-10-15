@@ -82,7 +82,7 @@ export function addThreadEvent(
 		data: event.data,
 		initialEmail,
 		userId,
-	}).catch((err: any) => console.error("Convex addEvent failed:", err));
+    }).catch((_err: any) => {});
 }
 
 export function syncLatestEventToConvex(

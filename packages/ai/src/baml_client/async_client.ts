@@ -277,8 +277,7 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
               if (log) {
               try {
               options.onTick!("Unknown", log);
-              } catch (error) {
-              console.error("Error in onTick callback for DetermineNextStep", error);
+              } catch (_error) {
               }
               }
               };
@@ -343,8 +342,7 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
               if (log) {
               try {
               options.onTick!("Unknown", log);
-              } catch (error) {
-              console.error("Error in onTick callback for PerformCalculation", error);
+              } catch (_error) {
               }
               }
               };
@@ -409,8 +407,7 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
               if (log) {
               try {
               options.onTick!("Unknown", log);
-              } catch (error) {
-              console.error("Error in onTick callback for SquashResponseContext", error);
+              } catch (_error) {
               }
               }
               };

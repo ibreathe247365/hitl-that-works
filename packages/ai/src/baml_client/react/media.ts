@@ -41,11 +41,7 @@ function createSSRProxyHandler<T extends object>(
 ): ProxyHandler<T> {
   return {
     get: (target, prop) => {
-      if (isSSR) {
-        console.warn(
-          `Using ${name} from '@boundaryml/baml/browser' in a server-side environment. This will not function properly in SSR.`,
-        );
-      }
+      // intentionally no-op in SSR
       return (target as Record<string | symbol, unknown>)[prop];
     },
   };

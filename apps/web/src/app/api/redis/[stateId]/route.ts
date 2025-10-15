@@ -3,101 +3,48 @@ import { enqueueWebhookProcessing, addThreadEvent } from "@hitl/ai";
 import { RollbackAgentEventSchema, ThreadSchema } from "@hitl/ai";
 import { z } from "zod";
 import { type NextRequest, NextResponse } from "next/server";
-import {
-	logger,
-	measureExecutionTime,
-} from "@/lib/logger";
+ 
 
 const UpdateStateRequestSchema = z.object({
 	thread: ThreadSchema,
 });
 
 export async function GET(
-	request: NextRequest,
-	{ params }: { params: Promise<{ stateId: string }> },
+    _request: NextRequest,
+    { params }: { params: Promise<{ stateId: string }> },
 ) {
-	const requestContext = logger.logRequestStart(request);
-	const startTime = Date.now();
 
 	try {
 		const { stateId } = await params;
 
-		logger.debug("Fetching Redis state", {
-			...requestContext,
-			stateId,
-		});
-
 		if (!stateId) {
-			logger.logValidationError(
-				requestContext,
-				"stateId",
-				stateId,
-				"StateId is required",
-			);
 			return NextResponse.json(
 				{ error: "StateId is required" },
 				{ status: 400 },
 			);
 		}
 
-		const threadState = await measureExecutionTime(
-			() => getThreadStateWithMetadata(stateId),
-			requestContext,
-			"Get thread state with metadata",
-		);
+        const threadState = await getThreadStateWithMetadata(stateId);
 
-		if (!threadState) {
-			logger.warn("Thread state not found", {
-				...requestContext,
-				stateId,
-			});
-			return NextResponse.json({ thread: { events: [] } });
-		}
-
-		logger.info("Thread state retrieved successfully", {
-			...requestContext,
-			stateId,
-			hasThreadState: !!threadState,
-		});
-
-		const duration = Date.now() - startTime;
-		logger.logRequestEnd(requestContext, 200, duration);
+        if (!threadState) {
+            return NextResponse.json({ thread: { events: [] } });
+        }
 
 		return NextResponse.json(threadState);
-	} catch (error) {
-		const duration = Date.now() - startTime;
-		logger.error(
-			"Error fetching Redis state",
-			{
-				...requestContext,
-				duration: `${duration}ms`,
-			},
-			error instanceof Error ? error : new Error(String(error)),
-		);
-
-		logger.logRequestEnd(requestContext, 500, duration);
-
+    } catch (_error) {
 		return NextResponse.json({ thread: { events: [] } });
 	}
 }
 
 export async function PUT(
-	request: NextRequest,
-	{ params }: { params: Promise<{ stateId: string }> },
+    request: NextRequest,
+    { params }: { params: Promise<{ stateId: string }> },
 ) {
-	const requestContext = logger.logRequestStart(request);
-	const startTime = Date.now();
 
 	try {
 		const { stateId } = await params;
 
-		if (!stateId) {
-			logger.logValidationError(
-				requestContext,
-				"stateId",
-				stateId,
-				"StateId is required",
-			);
+        if (!stateId) {
 			return NextResponse.json(
 				{ error: "StateId is required" },
 				{ status: 400 },
@@ -106,14 +53,8 @@ export async function PUT(
 
 		const body = await request.json();
 		
-		const validationResult = UpdateStateRequestSchema.safeParse(body);
-		if (!validationResult.success) {
-			logger.logValidationError(
-				requestContext,
-				"request body",
-				body,
-				"Invalid request body format",
-			);
+        const validationResult = UpdateStateRequestSchema.safeParse(body);
+        if (!validationResult.success) {
 			return NextResponse.json(
 				{ 
 					error: "Invalid request body format",
@@ -128,11 +69,7 @@ export async function PUT(
 
 		const { thread } = validationResult.data;
 
-		await measureExecutionTime(
-			() => updateThreadState(stateId, thread),
-			requestContext,
-			"Update thread state",
-		);
+        await updateThreadState(stateId, thread);
 
 		const rollbackEventData = {
 			type: "rollback-agent" as const,
@@ -144,14 +81,9 @@ export async function PUT(
 
 		const rollbackEvent = RollbackAgentEventSchema.parse(rollbackEventData);
 
-		await measureExecutionTime(
-			() => Promise.resolve(addThreadEvent(stateId, rollbackEvent)),
-			requestContext,
-			"Add rollback event to database",
-		);
+        await Promise.resolve(addThreadEvent(stateId, rollbackEvent));
 
-		const jobId = await measureExecutionTime(
-			() => enqueueWebhookProcessing(
+        const jobId = await enqueueWebhookProcessing(
 				{
 					type: "human_contact.completed",
 					event: {
@@ -163,39 +95,15 @@ export async function PUT(
 						},
 					},
 				},
-				stateId
-			),
-			requestContext,
-			"Enqueue webhook processing",
-		);
-
-		logger.info("Thread state updated successfully", {
-			...requestContext,
-			stateId,
-			jobId,
-		});
-
-		const duration = Date.now() - startTime;
-		logger.logRequestEnd(requestContext, 200, duration);
+                stateId,
+        );
 
 		return NextResponse.json({ 
 			success: true, 
 			jobId,
 			message: "State updated and webhook queued successfully" 
 		});
-	} catch (error) {
-		const duration = Date.now() - startTime;
-		logger.error(
-			"Error updating Redis state",
-			{
-				...requestContext,
-				duration: `${duration}ms`,
-			},
-			error instanceof Error ? error : new Error(String(error)),
-		);
-
-		logger.logRequestEnd(requestContext, 500, duration);
-
+    } catch (_error) {
 		return NextResponse.json(
 			{ error: "Failed to update thread state" },
 			{ status: 500 },

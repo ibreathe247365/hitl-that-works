@@ -29,8 +29,7 @@ function AppPromptInput() {
 		try {
 			sessionStorage.setItem("pendingMessage", message.text);
 			router.push("/dashboard");
-		} catch (error) {
-			console.error("Error storing message:", error);
+		} catch (_error) {
 		} finally {
 			setIsSubmitting(false);
 		}
