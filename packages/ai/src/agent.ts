@@ -8,7 +8,6 @@ import {
 } from "./baml_client";
 import { createHumanContact } from "./contact";
 import type {
-	EmailPayload,
 	Event,
 	FunctionCallCompleted,
 	HumanContactCompleted,
@@ -58,7 +57,7 @@ const functionHandlers: Record<
 };
 
 // Helper function to extract email address from thread
-const getEmailFromThread = (thread: Thread): string | null => {
+const getEmailFromThread = (_thread: Thread): string | null => {
 	return "delivered@resend.dev";
 	// First try to get from initial_email
 	// if (thread.initial_email) {
