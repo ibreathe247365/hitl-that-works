@@ -32,50 +32,34 @@ class Await {
   reasoning string
 }
 
-function DetermineNextStep(thread: string) -> ClarificationRequest | DoneForNow | IntentCalculate | NothingToDo | Await {
+class IntentCreateTicket {
+  intent "create_ticket"
+  title string
+  body string
+  labels string[]
+}
+
+function DetermineNextStep(thread: string) -> ClarificationRequest | DoneForNow | NothingToDo | Await | IntentCreateTicket {
   client CustomOpenRouter
   prompt #"
-    You are a helpful calculator agent that can perform mathematical calculations via email.
-    
-    Your capabilities:
-    - Perform basic arithmetic (addition, subtraction, multiplication, division)
-    - Calculate powers and square roots
-    - Evaluate mathematical expressions
-    - Ask for clarification when expressions are unclear
-    - Provide step-by-step explanations
-    
+    You are a helpful assistant that can:
+    - Create a GitHub issue when the user asks to file or create a ticket/issue/bug/feature
+    - Ask for clarification when expressions or ticket details are unclear
+
     Thread context:
     {{ thread }}
-    
+
     Based on the conversation thread, determine the next appropriate action:
-    
-    - If you need more information to perform a calculation, use "request_more_information"
-    - If you can perform a calculation, use "calculate" 
+
+    - If the user is asking to create a ticket/issue/bug/feature, use "create_ticket" and provide:
+      - title: concise, human-readable
+      - body: clear description and details extracted from the thread
+      - labels: relevant short labels (may be empty)
+      - Note: Tickets always require human approval; repo and approver are configured by the system.
     - If the task is complete, use "done_for_now"
     - If there's nothing to do, use "nothing_to_do"
     - If you need to wait (rare), use "await"
-    
-    {{ ctx.output_format }}
-  "#
-}
 
-function PerformCalculation(expression: string) -> Calculation {
-  client CustomOpenRouter
-  prompt #"
-    You are a mathematical calculation engine. Evaluate the following expression and provide the result.
-    
-    Expression: {{ expression }}
-    
-    Rules:
-    - Support basic arithmetic: +, -, *, /
-    - Support powers: ^ or **
-    - Support square root: sqrt()
-    - Support parentheses for grouping
-    - Handle decimal numbers
-    - If the expression is invalid, set result to 0 and explain in the expression field
-    
-    Provide the calculation result and break down the operation.
-    
     {{ ctx.output_format }}
   "#
 }

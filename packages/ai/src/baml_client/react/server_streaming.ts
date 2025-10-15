@@ -20,19 +20,13 @@ $ pnpm add @boundaryml/baml
 
 'use server'
 
-import type { Audio, Image, Pdf, Video } from "@boundaryml/baml";
-import { b } from "../index";
-import type * as types from "../types";
-import type {
-	Await,
-	Calculation,
-	Check,
-	Checked,
-	ClarificationRequest,
-	DoneForNow,
-	IntentCalculate,
-	NothingToDo,
-} from "../types";
+import { b } from '../index';
+import type { Check, Checked  } from "../types";
+import type { Image, Audio, Pdf, Video } from "@boundaryml/baml";
+
+import type {  Await,  Calculation,  ClarificationRequest,  DoneForNow,  IntentCalculate,  IntentCreateTicket,  NothingToDo } from "../types"
+
+import type * as types from "../types"
 
 /**
  * Streaming BAML server actions that return ReadableStreams.
@@ -49,27 +43,12 @@ import type {
  * @returns {ReadableStream<Uint8Array>} A stream that yields incremental updates from the action.
  */
 export const DetermineNextStep = async (
-	thread: string,
+  thread: string,
 ): Promise<ReadableStream<Uint8Array>> => {
-	const stream = b.stream.DetermineNextStep(thread);
-	return Promise.resolve(stream.toStreamable());
-};
-
-/**
- * Executes the streaming variant of the "PerformCalculation" BAML action.
- *
- * This action initiates a streaming response by calling the corresponding
- * BAML stream function. The returned stream yields incremental updates.
- *
- * @param { string } expression - Input parameter.
- *
- * @returns {ReadableStream<Uint8Array>} A stream that yields incremental updates from the action.
- */
-export const PerformCalculation = async (
-	expression: string,
-): Promise<ReadableStream<Uint8Array>> => {
-	const stream = b.stream.PerformCalculation(expression);
-	return Promise.resolve(stream.toStreamable());
+  const stream = b.stream.DetermineNextStep(
+    thread,
+  );
+  return Promise.resolve(stream.toStreamable());
 };
 
 /**
@@ -84,9 +63,12 @@ export const PerformCalculation = async (
  * @returns {ReadableStream<Uint8Array>} A stream that yields incremental updates from the action.
  */
 export const SquashResponseContext = async (
-	thread: string,
-	error: string,
+  thread: string,
+  error: string,
 ): Promise<ReadableStream<Uint8Array>> => {
-	const stream = b.stream.SquashResponseContext(thread, error);
-	return Promise.resolve(stream.toStreamable());
+  const stream = b.stream.SquashResponseContext(
+    thread,
+    error,
+  );
+  return Promise.resolve(stream.toStreamable());
 };

@@ -28,6 +28,7 @@
 	},
 	"dependencies": {
 		"@boundaryml/baml": "^0.211.0",
+    "@octokit/rest": "^21.0.0",
 		"@types/js-yaml": "^4.0.9",
 		"@upstash/redis": "^1.35.5",
 		"@hitl/backend": "workspace:*",

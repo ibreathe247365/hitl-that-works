@@ -30,6 +30,7 @@ import {
 	WebhookReceivedContent,
 } from "./events/WebhookEvents";
 import { WebhookProcessedContent } from "./events/WebhookProcessed";
+import { GitHubIssueResultContent } from "./events/GitHubIssueResult";
 import {
 	getEventLabel,
 	getEventStatusBlinkClass,
@@ -72,6 +73,8 @@ export function EventContent({ event }: { event: Event }): ReactElement {
 			return <NothingToDoIntentContent event={event} />;
 		case "calculate_result":
 			return <CalculateResultContent event={event} />;
+		case "function_result":
+			return <GitHubIssueResultContent event={event} />;
 		case "human_contact_sent":
 			return <HumanContactSentContent event={event} />;
 		default:

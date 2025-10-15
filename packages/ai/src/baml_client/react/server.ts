@@ -20,19 +20,13 @@ $ pnpm add @boundaryml/baml
 
 'use server'
 
-import type { Audio, Image, Pdf, Video } from "@boundaryml/baml";
-import { b } from "../index";
-import type * as types from "../types";
-import type {
-	Await,
-	Calculation,
-	Check,
-	Checked,
-	ClarificationRequest,
-	DoneForNow,
-	IntentCalculate,
-	NothingToDo,
-} from "../types";
+import { b } from '../index';
+import type { Check, Checked  } from "../types";
+import type { Image, Audio, Pdf, Video } from "@boundaryml/baml";
+
+import type {  Await,  Calculation,  ClarificationRequest,  DoneForNow,  IntentCalculate,  IntentCreateTicket,  NothingToDo } from "../types"
+
+import type * as types from "../types"
 
 /**
  * Regular BAML server actions that return direct responses.
@@ -46,34 +40,14 @@ import type {
  *
  * @param { string } thread - Input parameter.
  *
- * @returns {Promise<types.ClarificationRequest | types.DoneForNow | types.IntentCalculate | types.NothingToDo | types.Await>} A promise that resolves with the result of the action.
+ * @returns {Promise<types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket>} A promise that resolves with the result of the action.
  */
 export const DetermineNextStep = async (
-	thread: string,
-): Promise<
-	| types.ClarificationRequest
-	| types.DoneForNow
-	| types.IntentCalculate
-	| types.NothingToDo
-	| types.Await
-> => {
-	return b.DetermineNextStep(thread);
-};
-
-/**
- * Executes the "PerformCalculation" BAML action.
- *
- * This server action calls the underlying BAML function "PerformCalculation"
- * with the specified parameters.
- *
- * @param { string } expression - Input parameter.
- *
- * @returns {Promise<types.Calculation>} A promise that resolves with the result of the action.
- */
-export const PerformCalculation = async (
-	expression: string,
-): Promise<types.Calculation> => {
-	return b.PerformCalculation(expression);
+  thread: string,
+): Promise<types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket> => {
+  return b.DetermineNextStep(
+    thread,
+  );
 };
 
 /**
@@ -88,8 +62,11 @@ export const PerformCalculation = async (
  * @returns {Promise<string>} A promise that resolves with the result of the action.
  */
 export const SquashResponseContext = async (
-	thread: string,
-	error: string,
+  thread: string,
+  error: string,
 ): Promise<string> => {
-	return b.SquashResponseContext(thread, error);
+  return b.SquashResponseContext(
+    thread,
+    error,
+  );
 };

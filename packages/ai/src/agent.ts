@@ -1,12 +1,15 @@
 import {
-	type Await,
-	b,
-	type ClarificationRequest,
-	type DoneForNow,
-	type IntentCalculate,
-	type NothingToDo,
+    type Await,
+    b,
+    type ClarificationRequest,
+    type DoneForNow,
+    type NothingToDo,
+    type IntentCreateTicket,
 } from "./baml_client";
 import { createHumanContact } from "./contact";
+import { createGitHubIssue } from "./tools/github";
+import { sendEmailFunctionApprovalRequest } from "./contact";
+import { sendSlackFunctionApprovalRequest } from "./contact";
 import type {
 	Event,
 	FunctionCallCompleted,
@@ -16,44 +19,37 @@ import type {
 } from "./schemas";
 import { saveThreadState } from "./state";
 import { failOperation, startOperation, succeedOperation } from "./sync";
-import {
-	evaluateExpression,
-	formatCalculationResult,
-	validateMathematicalExpression,
-} from "./tools/calculator";
 import { threadToPrompt } from "./utils";
 
-// Define specific kwargs types for known function handlers
-type VercelDeploymentKwargs = {
-	new_deployment: string;
-	previous_deployment: string;
+
+
+type CreateGitHubIssueKwargs = {
+    repo?: string;
+    title: string;
+    body: string;
+    labels?: string[];
 };
 
-type TagPushProdKwargs = {
-	new_commit: string;
-	previous_commit: string;
-};
-
-type FunctionKwargs = VercelDeploymentKwargs | TagPushProdKwargs;
+type FunctionKwargs = CreateGitHubIssueKwargs;
 
 const functionHandlers: Record<
 	string,
 	(thread: Thread, kwargs: FunctionKwargs) => Promise<Thread>
 > = {
-	promote_vercel_deployment: async (thread, _kwargs) => {
-		// const typedKwargs = kwargs as VercelDeploymentKwargs;
-
-		return await appendResult(thread, async () => ({
-			status: "vercel deployment promotion not implemented yet",
-		}));
-	},
-	tag_push_prod: async (thread, _kwargs) => {
-		// const typedKwargs = kwargs as TagPushProdKwargs;
-
-		return await appendResult(thread, async () => ({
-			status: "tag and push to prod not implemented yet",
-		}));
-	},
+    create_github_issue: async (thread, kwargs) => {
+        const { repo, title, body, labels } = kwargs as CreateGitHubIssueKwargs;
+        const issue = await createGitHubIssue({
+            repo: repo || "",
+            title,
+            body,
+            labels: labels ?? [],
+        });
+        thread.events.push({
+            type: "function_result",
+            data: { fn: "create_github_issue", issue },
+        });
+        return thread;
+    },
 };
 
 // Helper function to extract email address from thread
@@ -124,12 +120,12 @@ const appendResult = async (
 
 const _handleNextStep = async (
 	thread: Thread,
-	nextStep:
-		| ClarificationRequest
-		| DoneForNow
-		| IntentCalculate
-		| NothingToDo
-		| Await,
+    nextStep:
+        | ClarificationRequest
+        | DoneForNow
+        | NothingToDo
+        | Await
+        | IntentCreateTicket,
 	stateId?: string,
 ): Promise<Thread | false> => {
 	thread.events.push({
@@ -145,6 +141,56 @@ const _handleNextStep = async (
 	}
 	let currentStateId: string | null = null;
 	switch (nextStep.intent) {
+        case "create_ticket": {
+            const ticket = nextStep as IntentCreateTicket;
+            const title = ticket.title?.trim() || "New issue";
+            const body = ticket.body?.trim() || "No description provided.";
+            const labels = ticket.labels || [];
+            const repo = process.env.GITHUB_REPO || "";
+            const approverEmail = "delivered@resend.dev";
+
+            currentStateId = await saveThreadState(
+                thread,
+                undefined,
+                undefined,
+                stateId,
+            );
+
+            thread.events.push({
+                type: "function_call",
+                data: { fn: "create_github_issue", kwargs: { repo, title, body, labels } },
+            });
+
+            await sendSlackFunctionApprovalRequest(
+                `Approve creating a GitHub issue?\n\nTitle: ${title}\n\nLabels: ${labels.join(", ") || "(none)"}`,
+                { slack: { channel_id: "webhook" } },
+                currentStateId || "",
+                "create_github_issue",
+                { repo, title, body, labels },
+            );
+
+            if (approverEmail) {
+                await sendEmailFunctionApprovalRequest(
+                    "Approve creating a GitHub issue?",
+                    { email: { address: approverEmail, subject: "Approval needed: GitHub issue" } },
+                    currentStateId || "",
+                    "create_github_issue",
+                    { repo, title, body, labels },
+                );
+            }
+
+            thread.events.push({
+                type: "human_contact_sent",
+                data: { message: "Approval links sent", timestamp: Date.now() },
+            });
+
+            if (stateId && aiStepOp) {
+                succeedOperation(stateId, "ai_step", aiStepOp, {
+                    result: { message: "Awaiting approval for GitHub issue creation" },
+                });
+            }
+            return false;
+        }
 		case "done_for_now": {
 			currentStateId = await saveThreadState(
 				thread,
@@ -253,78 +299,15 @@ const _handleNextStep = async (
 
 			return false;
 
-		case "await":
-			return await appendResult(thread, async () => {
-				await new Promise((resolve) =>
-					setTimeout(resolve, nextStep.seconds * 1000),
-				);
-				return {
-					status: `successfully waited ${nextStep.seconds} seconds`,
-				};
-			});
-
-		case "calculate":
-			return await appendResult(thread, async () => {
-				let toolOperationId: string | undefined;
-				if (stateId) {
-					toolOperationId = startOperation(
-						stateId,
-						"tool_call",
-						"tool.calculate",
-						{
-							source: "tool",
-							parentOperationId: aiStepOp,
-							payload: { expression: nextStep.expression },
-						},
-					);
-				}
-				const validation = validateMathematicalExpression(nextStep.expression);
-				if (!validation.isValid) {
-					if (stateId && toolOperationId) {
-						failOperation(
-							stateId,
-							"tool_call",
-							toolOperationId,
-							validation.error || "invalid expression",
-							{
-								parentOperationId: aiStepOp,
-								name: "tool.calculate",
-								source: "tool",
-							},
-						);
-					}
-					return {
-						expression: nextStep.expression,
-						result: 0,
-						error: validation.error,
-						explanation: nextStep.explanation,
-					};
-				}
-
-				const calculationResult = evaluateExpression(nextStep.expression);
-
-				const result = {
-					expression: nextStep.expression,
-					result: calculationResult.result,
-					steps: calculationResult.steps,
-					error: calculationResult.error,
-					explanation: nextStep.explanation,
-				};
-
-				const resultObj = {
-					...result,
-					formatted: formatCalculationResult(calculationResult),
-				};
-				if (stateId && toolOperationId) {
-					succeedOperation(stateId, "tool_call", toolOperationId, {
-						result: resultObj,
-					});
-				}
-				if (stateId && aiStepOp) {
-					succeedOperation(stateId, "ai_step", aiStepOp, { result: resultObj });
-				}
-				return resultObj;
-			});
+        case "await":
+            return await appendResult(thread, async () => {
+                await new Promise((resolve) =>
+                    setTimeout(resolve, nextStep.seconds * 1000),
+                );
+                return {
+                    status: `successfully waited ${nextStep.seconds} seconds`,
+                };
+            });
 
 		default: {
 			const errorMessage = `you called a tool that is not implemented: ${(nextStep as any).intent}, something is wrong with your internal programming, please get help from a human`;
