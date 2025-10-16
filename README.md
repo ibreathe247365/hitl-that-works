@@ -1,6 +1,13 @@
 # HITL: GH agent
 
 HITL powered github agent that can search/ create and update issues
+- Use these credentials for the hosted app - HITL/ retries/ etc
+    ```
+    samirsharma.iitd@gmail.com
+    12345678
+    ```
+- Watch the demo: https://www.loom.com/share/f177184a1c9a4f2d973b3b29430d2bbc?sid=43ef6ca1-4845-4176-9440-b066781addfe
+- How I thought about the project: https://www.loom.com/share/d066ae8209414415a77c671167b7aa6d?sid=32cb526f-2534-41e9-8df6-66e78670c8c2 
 
 ## System design
 ![System Design](./hitl-design.png)
