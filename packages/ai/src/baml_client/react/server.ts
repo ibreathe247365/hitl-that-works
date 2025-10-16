@@ -20,13 +20,24 @@ $ pnpm add @boundaryml/baml
 
 'use server'
 
-import { b } from '../index';
-import type { Check, Checked  } from "../types";
-import type { Image, Audio, Pdf, Video } from "@boundaryml/baml";
-
-import type {  Await,  Calculation,  ClarificationRequest,  DoneForNow,  IntentCalculate,  IntentCommentOnIssue,  IntentCreateTicket,  IntentLinkIssues,  IntentSearchGitHub,  IntentUpdateGitHubIssue,  NothingToDo } from "../types"
-
-import type * as types from "../types"
+import type { Audio, Image, Pdf, Video } from "@boundaryml/baml";
+import { b } from "../index";
+import type * as types from "../types";
+import type {
+	Await,
+	Calculation,
+	Check,
+	Checked,
+	ClarificationRequest,
+	DoneForNow,
+	IntentCalculate,
+	IntentCommentOnIssue,
+	IntentCreateTicket,
+	IntentLinkIssues,
+	IntentSearchGitHub,
+	IntentUpdateGitHubIssue,
+	NothingToDo,
+} from "../types";
 
 /**
  * Regular BAML server actions that return direct responses.
@@ -43,11 +54,19 @@ import type * as types from "../types"
  * @returns {Promise<types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues>} A promise that resolves with the result of the action.
  */
 export const DetermineNextStep = async (
-  thread: string,
-): Promise<types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues> => {
-  return b.DetermineNextStep(
-    thread,
-  );
+	thread: string,
+): Promise<
+	| types.ClarificationRequest
+	| types.DoneForNow
+	| types.NothingToDo
+	| types.Await
+	| types.IntentCreateTicket
+	| types.IntentSearchGitHub
+	| types.IntentUpdateGitHubIssue
+	| types.IntentCommentOnIssue
+	| types.IntentLinkIssues
+> => {
+	return b.DetermineNextStep(thread);
 };
 
 /**
@@ -62,11 +81,8 @@ export const DetermineNextStep = async (
  * @returns {Promise<string>} A promise that resolves with the result of the action.
  */
 export const SquashResponseContext = async (
-  thread: string,
-  error: string,
+	thread: string,
+	error: string,
 ): Promise<string> => {
-  return b.SquashResponseContext(
-    thread,
-    error,
-  );
+	return b.SquashResponseContext(thread, error);
 };

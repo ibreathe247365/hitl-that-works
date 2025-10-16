@@ -70,9 +70,10 @@ export async function searchGitHubIssues(options: {
 			number: item.number,
 			title: item.title,
 			state: item.state,
-			labels: item.labels
-				?.map((label) => (typeof label === "string" ? label : label.name))
-				.filter((label): label is string => Boolean(label)) || [],
+			labels:
+				item.labels
+					?.map((label) => (typeof label === "string" ? label : label.name))
+					.filter((label): label is string => Boolean(label)) || [],
 			html_url: item.html_url,
 			created_at: item.created_at,
 			updated_at: item.updated_at,
@@ -103,7 +104,8 @@ export async function updateGitHubIssue(options: {
 	if (options.title !== undefined) updateData.title = options.title;
 	if (options.body !== undefined) updateData.body = options.body;
 	if (options.labels !== undefined) updateData.labels = options.labels;
-	if (options.state !== undefined && options.state !== null) updateData.state = options.state;
+	if (options.state !== undefined && options.state !== null)
+		updateData.state = options.state;
 
 	const { data } = await octokit.issues.update({
 		owner: owner!,

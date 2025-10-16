@@ -255,29 +255,56 @@ test LinkIssuesDuplicates {
   @@assert({{ this.relationship == "duplicates" }})
 }
 
-test LinkIssuesRelates {
+test ContextualCommentAfterSearch {
   functions [DetermineNextStep]
   args {
     thread #"
-      User: "Link issue #406 to issue #407. They're related but not duplicates - they're different aspects of the same feature."
+      User: "add a comment to the first issue saying I'm working on it"
       
       Thread: [
         {
           type: "search_github",
           data: {
             intent: "search_github",
-            query: "related features",
+            query: "bug reports",
             type: "issues",
             filters: []
+          }
+        },
+        {
+          type: "github_search_result",
+          data: {
+            query: "bug reports",
+            type: "issues",
+            results: [
+              {
+                number: 15,
+                title: "Critical bug in login system",
+                state: "open",
+                labels: ["bug", "critical"],
+                html_url: "https://github.com/owner/repo/issues/15",
+                created_at: "2025-10-15T20:08:59Z",
+                updated_at: "2025-10-15T20:08:59Z"
+              },
+              {
+                number: 20,
+                title: "Fix memory leak",
+                state: "open",
+                labels: ["bug"],
+                html_url: "https://github.com/owner/repo/issues/20",
+                created_at: "2025-10-14T15:30:00Z",
+                updated_at: "2025-10-14T15:30:00Z"
+              }
+            ],
+            total_count: 2
           }
         }
       ]
     "#
   }
-  @@assert({{ this.intent == "link_issues" }})
-  @@assert({{ this.source_issue == 406 }})
-  @@assert({{ this.target_issue == 407 }})
-  @@assert({{ this.relationship == "relates_to" }})
+  @@assert({{ this.intent == "comment_on_issue" }})
+  @@assert({{ this.issue_number == 15 }})
+  @@assert({{ "working on it" in this.comment }})
 }
 
 test SearchComplexQuery {
@@ -296,44 +323,79 @@ test SearchComplexQuery {
   @@assert({{ "label:performance" in this.filters }})
 }
 
-test UpdateMultipleFields {
+test ReferToIssueByPosition {
   functions [DetermineNextStep]
   args {
     thread #"
-      User: "Update issue #999 with a new title 'Fix API rate limiting for external integrations', add the 'api' and 'integration' labels, and update the description to include the specific error codes we're seeing."
+      User: "close the second one"
       
       Thread: [
         {
           type: "search_github",
           data: {
             intent: "search_github",
-            query: "API rate limiting",
+            query: "open issues",
             type: "issues",
-            filters: []
+            filters: ["is:open"]
+          }
+        },
+        {
+          type: "github_search_result",
+          data: {
+            query: "open issues",
+            type: "issues",
+            results: [
+              {
+                number: 5,
+                title: "First issue",
+                state: "open",
+                labels: ["bug"],
+                html_url: "https://github.com/owner/repo/issues/5",
+                created_at: "2025-10-15T20:08:59Z",
+                updated_at: "2025-10-15T20:08:59Z"
+              },
+              {
+                number: 8,
+                title: "Second issue",
+                state: "open",
+                labels: ["enhancement"],
+                html_url: "https://github.com/owner/repo/issues/8",
+                created_at: "2025-10-14T15:30:00Z",
+                updated_at: "2025-10-14T15:30:00Z"
+              },
+              {
+                number: 12,
+                title: "Third issue",
+                state: "open",
+                labels: ["feature"],
+                html_url: "https://github.com/owner/repo/issues/12",
+                created_at: "2025-10-13T10:15:00Z",
+                updated_at: "2025-10-13T10:15:00Z"
+              }
+            ],
+            total_count: 3
           }
         }
       ]
     "#
   }
   @@assert({{ this.intent == "update_github_issue" }})
-  @@assert({{ this.issue_number == 999 }})
-  @@assert({{ this.title == "Fix API rate limiting for external integrations" }})
-  @@assert({{ "api" in this.labels }})
-  @@assert({{ "integration" in this.labels }})
+  @@assert({{ this.issue_number == 8 }})
+  @@assert({{ this.state == "closed" }})
 }
 
-test SearchRecentIssues {
+test EmptyQueryAllIssues {
   functions [DetermineNextStep]
   args {
     thread #"
-      User: "Show me all the issues created in the last week that are still open."
+      User: "search for all the issues"
       
       Thread: []
     "#
   }
   @@assert({{ this.intent == "search_github" }})
+  @@assert({{ this.query == "" }})
   @@assert({{ this.type == "issues" }})
-  @@assert({{ "is:open" in this.filters }})
 }
 
 test LinkIssuesBlockedBy {
@@ -361,45 +423,171 @@ test LinkIssuesBlockedBy {
   @@assert({{ this.relationship == "blocked_by" }})
 }
 
-test InvalidIssueNumber {
+test UpdateAfterFunctionResult {
   functions [DetermineNextStep]
   args {
     thread #"
-      User: "Update issue #abc with a new title 'Fix invalid issue number handling'."
+      User: "actually, also add the urgent label"
       
-      Thread: []
+      Thread: [
+        {
+          type: "update_github_issue",
+          data: {
+            intent: "update_github_issue",
+            issue_number: 101,
+            title: "Fix API rate limiting",
+            body: "Updated description",
+            labels: ["api"],
+          }
+        },
+        {
+          type: "function_call",
+          data: {
+            fn: "update_github_issue",
+            kwargs: {
+              issue_number: 101,
+              title: "Fix API rate limiting",
+              body: "Updated description",
+              labels: ["api"],
+            }
+          }
+        },
+        {
+          type: "function_result",
+          data: {
+            fn: "update_github_issue",
+            issue: {
+              url: "https://github.com/owner/repo/issues/101",
+              number: 101,
+              updatedAt: "2025-10-16T04:36:56Z"
+            }
+          }
+        },
+        {
+          type: "done_for_now",
+          data: {
+            intent: "done_for_now",
+            message: "Updated issue #101"
+          }
+        }
+      ]
     "#
   }
-  @@assert({{ this.intent == "request_more_information" }})
-  @@assert({{ "valid issue number" in this.message }})
+  @@assert({{ this.intent == "update_github_issue" }})
+  @@assert({{ this.issue_number == 101 }})
+  @@assert({{ "urgent" in this.labels }})
 }
 
-test AmbiguousSearch {
+test AssigneeSearchMyIssues {
   functions [DetermineNextStep]
   args {
     thread #"
-      User: "Find the bug."
-      
-      Thread: []
-    "#
-  }
-  @@assert({{ this.intent == "request_more_information" }})
-  @@assert({{ "more specific details" in this.message }})
-}
-
-test MultipleOperations {
-  functions [DetermineNextStep]
-  args {
-    thread #"
-      User: "I need to: 1) Search for all open issues with 'bug' label, 2) Update issue #123 with 'urgent' label, 3) Add a comment to issue #456, and 4) Link issue #789 to issue #101 as duplicates."
+      User: "what issues do i have on gh"
       
       Thread: []
     "#
   }
   @@assert({{ this.intent == "search_github" }})
+  @@assert({{ this.query == "assignee:@me" }})
   @@assert({{ this.type == "issues" }})
-  @@assert({{ "is:open" in this.filters }})
-  @@assert({{ "label:bug" in this.filters }})
+}
+
+test MultiTurnSearchCreateUpdate {
+  functions [DetermineNextStep]
+  args {
+    thread #"
+      User: "update the issue with more details"
+      
+      Thread: [
+        {
+          type: "human_response",
+          data: "what issues do i have on gh"
+        },
+        {
+          type: "search_github",
+          data: {
+            intent: "search_github",
+            query: "assignee:@me",
+            type: "issues",
+            filters: []
+          }
+        },
+        {
+          type: "function_call",
+          data: {
+            fn: "search_github",
+            kwargs: {
+              query: "assignee:@me",
+              type: "issues",
+              filters: []
+            }
+          }
+        },
+        {
+          type: "github_search_result",
+          data: {
+            query: "assignee:@me",
+            type: "issues",
+            results: [],
+            total_count: 0
+          }
+        },
+        {
+          type: "done_for_now",
+          data: {
+            intent: "done_for_now",
+            message: "I checked for issues assigned to you, and there are currently none."
+          }
+        },
+        {
+          type: "human_response",
+          data: "add another feature request to support markdown in baml using backticks"
+        },
+        {
+          type: "create_ticket",
+          data: {
+            intent: "create_ticket",
+            title: "Feature request: Support markdown in BAML using backticks",
+            body: "Add support for rendering markdown syntax within BAML templates when enclosed in backticks.",
+            labels: ["enhancement", "markdown", "baml"]
+          }
+        },
+        {
+          type: "function_call",
+          data: {
+            fn: "create_github_issue",
+            kwargs: {
+              repo: "owner/repo",
+              title: "Feature request: Support markdown in BAML using backticks",
+              body: "Add support for rendering markdown syntax within BAML templates when enclosed in backticks.",
+              labels: ["enhancement", "markdown", "baml"]
+            }
+          }
+        },
+        {
+          type: "function_result",
+          data: {
+            fn: "create_github_issue",
+            issue: {
+              url: "https://github.com/owner/repo/issues/2",
+              number: 2,
+              createdAt: "2025-10-16T04:29:00Z"
+            }
+          }
+        },
+        {
+          type: "done_for_now",
+          data: {
+            intent: "done_for_now",
+            message: "Created a new feature request: #2"
+          }
+        }
+      ]
+    "#
+  }
+  @@assert({{ this.intent == "update_github_issue" }})
+  @@assert({{ this.issue_number == 2 }})
+  @@assert({{ this.body != "" }})
 }
 
 test EmptySearch {
@@ -415,28 +603,46 @@ test EmptySearch {
   @@assert({{ this.type == "issues" }})
 }
 
-test VeryLongComment {
+test ContextualUpdateAfterCreate {
   functions [DetermineNextStep]
   args {
     thread #"
-      User: "Add this comment to issue #555: 'This is a very detailed analysis of the problem. The issue occurs when users attempt to upload files larger than 10MB through the web interface. The error manifests as a timeout after 30 seconds, but the actual problem is in the file validation logic. The validation function is checking the file size before the upload completes, which causes a race condition. Additionally, the error handling is not properly catching the specific exception thrown by the file system when the disk space is insufficient. This needs to be fixed by: 1) Moving the file size check to after the upload completes, 2) Adding proper disk space validation, 3) Implementing proper error handling for file system exceptions, and 4) Adding progress indicators for large file uploads.'"
+      User: "update the issue you created with better description"
       
       Thread: [
         {
-          type: "search_github",
+          type: "create_ticket",
           data: {
-            intent: "search_github",
-            query: "file upload timeout",
-            type: "issues",
-            filters: []
+            intent: "create_ticket",
+            title: "Add dark mode support",
+            body: "Users want dark mode",
+            labels: ["enhancement"]
+          }
+        },
+        {
+          type: "function_result",
+          data: {
+            fn: "create_github_issue",
+            issue: {
+              url: "https://github.com/owner/repo/issues/42",
+              number: 42,
+              createdAt: "2025-10-16T04:29:00Z"
+            }
+          }
+        },
+        {
+          type: "done_for_now",
+          data: {
+            intent: "done_for_now",
+            message: "Created issue #42"
           }
         }
       ]
     "#
   }
-  @@assert({{ this.intent == "comment_on_issue" }})
-  @@assert({{ this.issue_number == 555 }})
-  @@assert({{ "detailed analysis" in this.comment }})
+  @@assert({{ this.intent == "update_github_issue" }})
+  @@assert({{ this.issue_number == 42 }})
+  @@assert({{ this.body != "" }})
 }
 
 test NothingToDo {

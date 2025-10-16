@@ -2,7 +2,7 @@
 
 import type { Event } from "@hitl/ai/schemas";
 import { BrainIcon } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
 	ChainOfThought,
 	ChainOfThoughtContent,
@@ -10,8 +10,8 @@ import {
 } from "@/components/ai-elements/chain-of-thought";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ALL_EVENT_TYPES, EventFilter } from "./EventFilter";
 import { EventContentStepList } from "./parts/EventContentStepList";
-import { EventFilter, ALL_EVENT_TYPES } from "./EventFilter";
 import type { EventTypeFilter } from "./types";
 
 interface EventChainProps {
@@ -19,28 +19,33 @@ interface EventChainProps {
 }
 
 export function EventChain({ events }: EventChainProps) {
-	const [visibleEventTypes, setVisibleEventTypes] = useState<EventTypeFilter>(() => {
-		const defaultFilters: EventTypeFilter = {};
-		ALL_EVENT_TYPES.forEach((eventType) => {
-			defaultFilters[eventType] = true;
-		});
-		return defaultFilters;
-	});
+	const [visibleEventTypes, setVisibleEventTypes] = useState<EventTypeFilter>(
+		() => {
+			const defaultFilters: EventTypeFilter = {};
+			ALL_EVENT_TYPES.forEach((eventType) => {
+				defaultFilters[eventType] = true;
+			});
+			return defaultFilters;
+		},
+	);
 
 	useEffect(() => {
-		const savedFilters = localStorage.getItem('event-chain-filters');
+		const savedFilters = localStorage.getItem("event-chain-filters");
 		if (savedFilters) {
 			try {
 				const parsedFilters = JSON.parse(savedFilters);
 				setVisibleEventTypes(parsedFilters);
 			} catch (error) {
-				console.warn('Failed to parse saved event filters:', error);
+				console.warn("Failed to parse saved event filters:", error);
 			}
 		}
 	}, []);
 
 	useEffect(() => {
-		localStorage.setItem('event-chain-filters', JSON.stringify(visibleEventTypes));
+		localStorage.setItem(
+			"event-chain-filters",
+			JSON.stringify(visibleEventTypes),
+		);
 	}, [visibleEventTypes]);
 
 	const eventsSortedByTime = [...events].sort((a, b) => {
@@ -49,8 +54,8 @@ export function EventChain({ events }: EventChainProps) {
 		return aTs - bTs;
 	});
 
-	const filteredEvents = eventsSortedByTime.filter(event => 
-		visibleEventTypes[event.type] !== false
+	const filteredEvents = eventsSortedByTime.filter(
+		(event) => visibleEventTypes[event.type] !== false,
 	);
 
 	if (events.length === 0) {
@@ -62,7 +67,7 @@ export function EventChain({ events }: EventChainProps) {
 							<BrainIcon className="h-5 w-5 text-primary" />
 							Event Chain
 						</div>
-						<EventFilter 
+						<EventFilter
 							visibleEventTypes={visibleEventTypes}
 							onFilterChange={setVisibleEventTypes}
 						/>
@@ -98,7 +103,7 @@ export function EventChain({ events }: EventChainProps) {
 						<BrainIcon className="h-5 w-5 text-primary" />
 						Event Chain
 					</div>
-					<EventFilter 
+					<EventFilter
 						visibleEventTypes={visibleEventTypes}
 						onFilterChange={setVisibleEventTypes}
 					/>
