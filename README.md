@@ -6,6 +6,10 @@ HITL powered github agent that can search/ create and update issues
     samirsharma.iitd@gmail.com
     12345678
     ```
+- Thread examples to look at:
+  -   https://hitl-that-works-web.vercel.app/dashboard/threads/thread_1760613820905_1qoz2b
+  -   https://hitl-that-works-web.vercel.app/dashboard/threads/thread_1760613396418_j84cb
+  -   https://hitl-that-works-web.vercel.app/dashboard/threads/thread_1760611103312_x56wb8
 - Watch the demo: https://www.loom.com/share/f177184a1c9a4f2d973b3b29430d2bbc?sid=43ef6ca1-4845-4176-9440-b066781addfe
 - How I thought about the project: https://www.loom.com/share/d066ae8209414415a77c671167b7aa6d?sid=32cb526f-2534-41e9-8df6-66e78670c8c2 
 
