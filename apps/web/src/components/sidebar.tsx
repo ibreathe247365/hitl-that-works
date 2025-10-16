@@ -2,7 +2,7 @@
 
 import { api } from "@hitl/backend/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
-import { ListIcon, PlusIcon, UserIcon } from "lucide-react";
+import { GitForkIcon, ListIcon, PlusIcon, UserIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -68,6 +68,23 @@ export function Sidebar() {
 			</Button>
 
 			<div className="flex-1" />
+
+			<a
+				href="https://github.com/ibreathe247365/hitl-that-works"
+				target="_blank"
+				rel="noopener noreferrer"
+				aria-label="View project on GitHub"
+				className="flex items-center justify-center"
+				title="Open GitHub"
+			>
+				<Button
+					variant="ghost"
+					size="icon"
+					className="h-10 w-10 rounded-full transition-colors hover:bg-primary/10 hover:text-primary"
+				>
+					<GitForkIcon className="h-6 w-6" />
+				</Button>
+			</a>
 
 			<Popover>
 				<PopoverTrigger asChild>

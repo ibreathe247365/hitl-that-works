@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard } from "lucide-react";
+import { GitForkIcon, LayoutDashboard } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -74,6 +74,15 @@ export default function Home() {
 					<Logo />
 					<div className="flex items-center gap-4">
 						<ModeToggle />
+						<a
+							href="https://github.com/ibreathe247365/hitl-that-works"
+							target="_blank"
+							rel="noopener noreferrer"
+							aria-label="View project on GitHub"
+							className="inline-flex items-center justify-center rounded-md border border-foreground/20 bg-background/10 px-2 py-2 text-foreground transition-colors hover:bg-background/20 dark:border-white/30 dark:bg-transparent dark:text-white dark:hover:bg-white/20"
+						>
+							<GitForkIcon className="h-4 w-4" />
+						</a>
 						<Button
 							variant="outline"
 							onClick={() => router.push("/dashboard")}

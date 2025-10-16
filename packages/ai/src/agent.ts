@@ -15,6 +15,7 @@ import {
 	sendEmailFunctionApprovalRequest,
 	sendSlackFunctionApprovalRequest,
 } from "./contact";
+import { functionHandlers } from "./functions";
 import type {
 	Event,
 	FunctionCallCompleted,
@@ -24,7 +25,6 @@ import type {
 } from "./schemas";
 import { saveThreadState } from "./state";
 import { failOperation, startOperation, succeedOperation } from "./sync";
-import { functionHandlers } from "./functions";
 import { threadToPrompt } from "./utils";
 
 // functionHandlers moved to ./functions
