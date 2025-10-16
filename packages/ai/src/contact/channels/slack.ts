@@ -18,7 +18,16 @@ export async function sendSlack(
 		}
 
 		const payload = {
-			text: `${message}\n\n_Thread ID: ${stateId}_`,
+			text: `${message}\n\n_Thread ID: ${stateId}_\n\n`,
+			blocks: [
+				{
+					type: "section",
+					text: {
+						type: "mrkdwn",
+						text: `${message}\n\n<https://hitl-that-works-web.vercel.app/dashboard/threads/${stateId}|Go to thread>`,
+					},
+				},
+			],
 		} as const;
 
 		const res = await fetch(webhookUrl, {
@@ -139,7 +148,7 @@ export async function sendSlackFunctionApprovalRequest(
 						},
 						{
 							type: "button",
-							text: { type: "plain_text", text: "Custom…" },
+							text: { type: "plain_text", text: "Provide feedback" },
 							url: customUrl,
 						},
 					],

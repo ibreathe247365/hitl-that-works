@@ -25,6 +25,7 @@ export async function sendEmail(
 					<p>${message}</p>
 					<hr>
 					<p><small>Thread ID: ${stateId}</small></p>
+					<p><small>Got to thread: <a href="https://hitl-that-works-web.vercel.app/dashboard/threads/${stateId}">https://hitl-that-works-web.vercel.app/dashboard/threads/${stateId}</a></small></p>
 					<p><small>Reply to this email to respond to the AI agent.</small></p>
 				</div>
 			`,
