@@ -20,7 +20,7 @@ $ pnpm add @boundaryml/baml
 
 import type { Image, Audio, Pdf, Video } from "@boundaryml/baml"
 import type { Checked, Check } from "./types"
-import type {  Await,  Calculation,  ClarificationRequest,  DoneForNow,  IntentCalculate,  IntentCreateTicket,  NothingToDo } from "./types"
+import type {  Await,  Calculation,  ClarificationRequest,  DoneForNow,  IntentCalculate,  IntentCommentOnIssue,  IntentCreateTicket,  IntentLinkIssues,  IntentSearchGitHub,  IntentUpdateGitHubIssue,  NothingToDo } from "./types"
 import type * as types from "./types"
 
 /******************************************************************************
@@ -60,11 +60,36 @@ export namespace partial_types {
       expression?: string | null
       explanation?: string | null
     }
+    export interface IntentCommentOnIssue {
+      intent?: "comment_on_issue" | null
+      issue_number?: number | null
+      comment?: string | null
+    }
     export interface IntentCreateTicket {
       intent?: "create_ticket" | null
       title?: string | null
       body?: string | null
       labels: string[]
+    }
+    export interface IntentLinkIssues {
+      intent?: "link_issues" | null
+      source_issue?: number | null
+      target_issue?: number | null
+      relationship?: "blocks" | "blocked_by" | "relates_to" | "duplicates" | null
+    }
+    export interface IntentSearchGitHub {
+      intent?: "search_github" | null
+      query?: string | null
+      type?: "issues" | "prs" | null
+      filters: string[]
+    }
+    export interface IntentUpdateGitHubIssue {
+      intent?: "update_github_issue" | null
+      issue_number?: number | null
+      title?: string | null
+      body?: string | null
+      labels?: string[] | null
+      state?: "open" | "closed" | null
     }
     export interface NothingToDo {
       intent?: "nothing_to_do" | null

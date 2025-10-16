@@ -160,6 +160,47 @@ export const CalculateIntentEventSchema = z.object({
 	}),
 });
 
+export const SearchGitHubIntentEventSchema = z.object({
+	type: z.literal("search_github"),
+	data: z.object({
+		intent: z.literal("search_github"),
+		query: z.string(),
+		type: z.enum(["issues", "prs"]),
+		filters: z.array(z.string()),
+	}),
+});
+
+export const UpdateGitHubIssueIntentEventSchema = z.object({
+	type: z.literal("update_github_issue"),
+	data: z.object({
+		intent: z.literal("update_github_issue"),
+		issue_number: z.number(),
+		title: z.string().optional(),
+		body: z.string().optional(),
+		labels: z.array(z.string()).optional(),
+		state: z.enum(["open", "closed"]).optional(),
+	}),
+});
+
+export const CommentOnIssueIntentEventSchema = z.object({
+	type: z.literal("comment_on_issue"),
+	data: z.object({
+		intent: z.literal("comment_on_issue"),
+		issue_number: z.number(),
+		comment: z.string(),
+	}),
+});
+
+export const LinkIssuesIntentEventSchema = z.object({
+	type: z.literal("link_issues"),
+	data: z.object({
+		intent: z.literal("link_issues"),
+		source_issue: z.number(),
+		target_issue: z.number(),
+		relationship: z.enum(["blocks", "blocked_by", "relates_to", "duplicates"]),
+	}),
+});
+
 export const DoneForNowIntentEventSchema = z.object({
 	type: z.literal("done_for_now"),
 	data: z.object({
@@ -185,6 +226,26 @@ export const CalculateResultEventSchema = z.object({
 		steps: z.array(z.string()).optional(),
 		formatted: z.string().optional(),
 		explanation: z.string().optional(),
+	}),
+});
+
+export const GitHubSearchResultEventSchema = z.object({
+	type: z.literal("github_search_result"),
+	data: z.object({
+		query: z.string(),
+		type: z.enum(["issues", "prs"]),
+		results: z.array(
+			z.object({
+				number: z.number(),
+				title: z.string(),
+				state: z.string(),
+				labels: z.array(z.string()),
+				html_url: z.string(),
+				created_at: z.string(),
+				updated_at: z.string(),
+			}),
+		),
+		total_count: z.number(),
 	}),
 });
 
@@ -228,10 +289,15 @@ export const EventSchema = z.union([
 	FunctionCallEventSchema,
 	WebhookProcessedEventSchema,
 	CalculateIntentEventSchema,
+	SearchGitHubIntentEventSchema,
+	UpdateGitHubIssueIntentEventSchema,
+	CommentOnIssueIntentEventSchema,
+	LinkIssuesIntentEventSchema,
 	DoneForNowIntentEventSchema,
 	NothingToDoIntentEventSchema,
 	HumanContactSentEventSchema,
 	CalculateResultEventSchema,
+	GitHubSearchResultEventSchema,
 	RollbackAgentEventSchema,
 	GenericEventSchema,
 ]);
@@ -266,5 +332,18 @@ export type NothingToDoIntentEvent = z.infer<
 	typeof NothingToDoIntentEventSchema
 >;
 export type CalculateResultEvent = z.infer<typeof CalculateResultEventSchema>;
+export type GitHubSearchResultEvent = z.infer<
+	typeof GitHubSearchResultEventSchema
+>;
+export type SearchGitHubIntentEvent = z.infer<
+	typeof SearchGitHubIntentEventSchema
+>;
+export type UpdateGitHubIssueIntentEvent = z.infer<
+	typeof UpdateGitHubIssueIntentEventSchema
+>;
+export type CommentOnIssueIntentEvent = z.infer<
+	typeof CommentOnIssueIntentEventSchema
+>;
+export type LinkIssuesIntentEvent = z.infer<typeof LinkIssuesIntentEventSchema>;
 export type ErrorEvent = z.infer<typeof ErrorEventSchema>;
 export type HumanContactSentEvent = z.infer<typeof HumanContactSentEventSchema>;

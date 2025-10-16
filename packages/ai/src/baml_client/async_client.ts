@@ -24,7 +24,7 @@ import { toBamlError, BamlStream, BamlAbortError, Collector } from "@boundaryml/
 import type { Checked, Check, RecursivePartialNull as MovedRecursivePartialNull } from "./types"
 import type { partial_types } from "./partial_types"
 import type * as types from "./types"
-import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, IntentCreateTicket, NothingToDo} from "./types"
+import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, IntentCommentOnIssue, IntentCreateTicket, IntentLinkIssues, IntentSearchGitHub, IntentUpdateGitHubIssue, NothingToDo} from "./types"
 import type TypeBuilder from "./type_builder"
 import { AsyncHttpRequest, AsyncHttpStreamRequest } from "./async_request"
 import { LlmResponseParser, LlmStreamParser } from "./parser"
@@ -97,7 +97,7 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
         async DetermineNextStep(
         thread: string,
         __baml_options__?: BamlCallOptions
-        ): Promise<types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket> {
+        ): Promise<types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues> {
           try {
           const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
           const signal = options.signal;
@@ -135,7 +135,7 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
             env,
             signal,
             )
-            return raw.parsed(false) as types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket
+            return raw.parsed(false) as types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues
             } catch (error) {
             throw toBamlError(error);
             }
@@ -205,7 +205,7 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
             DetermineNextStep(
             thread: string,
             __baml_options__?: BamlCallOptions
-            ): BamlStream<partial_types.ClarificationRequest | partial_types.DoneForNow | partial_types.NothingToDo | partial_types.Await | partial_types.IntentCreateTicket, types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket>
+            ): BamlStream<partial_types.ClarificationRequest | partial_types.DoneForNow | partial_types.NothingToDo | partial_types.Await | partial_types.IntentCreateTicket | partial_types.IntentSearchGitHub | partial_types.IntentUpdateGitHubIssue | partial_types.IntentCommentOnIssue | partial_types.IntentLinkIssues, types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues>
               {
               try {
               const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
@@ -256,10 +256,10 @@ export type RecursivePartialNull<T> = MovedRecursivePartialNull<T>
                 signal,
                 onTickWrapper,
                 )
-                return new BamlStream<partial_types.ClarificationRequest | partial_types.DoneForNow | partial_types.NothingToDo | partial_types.Await | partial_types.IntentCreateTicket, types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket>(
+                return new BamlStream<partial_types.ClarificationRequest | partial_types.DoneForNow | partial_types.NothingToDo | partial_types.Await | partial_types.IntentCreateTicket | partial_types.IntentSearchGitHub | partial_types.IntentUpdateGitHubIssue | partial_types.IntentCommentOnIssue | partial_types.IntentLinkIssues, types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues>(
                   raw,
-                  (a): partial_types.ClarificationRequest | partial_types.DoneForNow | partial_types.NothingToDo | partial_types.Await | partial_types.IntentCreateTicket => a,
-                  (a): types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket => a,
+                  (a): partial_types.ClarificationRequest | partial_types.DoneForNow | partial_types.NothingToDo | partial_types.Await | partial_types.IntentCreateTicket | partial_types.IntentSearchGitHub | partial_types.IntentUpdateGitHubIssue | partial_types.IntentCommentOnIssue | partial_types.IntentLinkIssues => a,
+                  (a): types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues => a,
                   this.ctxManager.cloneContext(),
                   options.signal,
                   )

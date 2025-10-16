@@ -81,11 +81,44 @@ export interface IntentCalculate {
   
 }
 
+export interface IntentCommentOnIssue {
+  intent: "comment_on_issue"
+  issue_number: number
+  comment: string
+  
+}
+
 export interface IntentCreateTicket {
   intent: "create_ticket"
   title: string
   body: string
   labels: string[]
+  
+}
+
+export interface IntentLinkIssues {
+  intent: "link_issues"
+  source_issue: number
+  target_issue: number
+  relationship: "blocks" | "blocked_by" | "relates_to" | "duplicates"
+  
+}
+
+export interface IntentSearchGitHub {
+  intent: "search_github"
+  query: string
+  type: "issues" | "prs"
+  filters: string[]
+  
+}
+
+export interface IntentUpdateGitHubIssue {
+  intent: "update_github_issue"
+  issue_number: number
+  title?: string | null
+  body?: string | null
+  labels?: string[] | null
+  state?: "open" | "closed" | null
   
 }
 

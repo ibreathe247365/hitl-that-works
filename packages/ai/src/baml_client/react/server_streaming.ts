@@ -24,7 +24,7 @@ import { b } from '../index';
 import type { Check, Checked  } from "../types";
 import type { Image, Audio, Pdf, Video } from "@boundaryml/baml";
 
-import type {  Await,  Calculation,  ClarificationRequest,  DoneForNow,  IntentCalculate,  IntentCreateTicket,  NothingToDo } from "../types"
+import type {  Await,  Calculation,  ClarificationRequest,  DoneForNow,  IntentCalculate,  IntentCommentOnIssue,  IntentCreateTicket,  IntentLinkIssues,  IntentSearchGitHub,  IntentUpdateGitHubIssue,  NothingToDo } from "../types"
 
 import type * as types from "../types"
 

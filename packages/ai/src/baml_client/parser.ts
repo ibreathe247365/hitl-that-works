@@ -23,7 +23,7 @@ import { toBamlError } from "@boundaryml/baml"
 import type { Checked, Check } from "./types"
 import type { partial_types } from "./partial_types"
 import type * as types from "./types"
-import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, IntentCreateTicket, NothingToDo} from "./types"
+import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, IntentCommentOnIssue, IntentCreateTicket, IntentLinkIssues, IntentSearchGitHub, IntentUpdateGitHubIssue, NothingToDo} from "./types"
 import type TypeBuilder from "./type_builder"
 
 export class LlmResponseParser {
@@ -33,7 +33,7 @@ export class LlmResponseParser {
   DetermineNextStep(
       llmResponse: string,
       __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
-  ): types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket {
+  ): types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues {
     try {
       const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
       const env: Record<string, string> = Object.fromEntries(
@@ -47,7 +47,7 @@ export class LlmResponseParser {
         __baml_options__?.tb?.__tb(),
         __baml_options__?.clientRegistry,
         env,
-      ) as types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket
+      ) as types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues
     } catch (error) {
       throw toBamlError(error);
     }
@@ -85,7 +85,7 @@ export class LlmStreamParser {
   DetermineNextStep(
       llmResponse: string,
       __baml_options__?: { tb?: TypeBuilder, clientRegistry?: ClientRegistry, env?: Record<string, string | undefined> }
-  ): partial_types.ClarificationRequest | partial_types.DoneForNow | partial_types.NothingToDo | partial_types.Await | partial_types.IntentCreateTicket {
+  ): partial_types.ClarificationRequest | partial_types.DoneForNow | partial_types.NothingToDo | partial_types.Await | partial_types.IntentCreateTicket | partial_types.IntentSearchGitHub | partial_types.IntentUpdateGitHubIssue | partial_types.IntentCommentOnIssue | partial_types.IntentLinkIssues {
     try {
       const rawEnv = __baml_options__?.env ? { ...process.env, ...__baml_options__.env } : { ...process.env };
       const env: Record<string, string> = Object.fromEntries(
@@ -99,7 +99,7 @@ export class LlmStreamParser {
         __baml_options__?.tb?.__tb(),
         __baml_options__?.clientRegistry,
         env,
-      ) as partial_types.ClarificationRequest | partial_types.DoneForNow | partial_types.NothingToDo | partial_types.Await | partial_types.IntentCreateTicket
+      ) as partial_types.ClarificationRequest | partial_types.DoneForNow | partial_types.NothingToDo | partial_types.Await | partial_types.IntentCreateTicket | partial_types.IntentSearchGitHub | partial_types.IntentUpdateGitHubIssue | partial_types.IntentCommentOnIssue | partial_types.IntentLinkIssues
     } catch (error) {
       throw toBamlError(error);
     }

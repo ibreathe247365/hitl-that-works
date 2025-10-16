@@ -2,6 +2,7 @@
 
 import type { Event } from "@hitl/ai/schemas";
 import { BrainIcon } from "lucide-react";
+import { useState, useEffect } from "react";
 import {
 	ChainOfThought,
 	ChainOfThoughtContent,
@@ -10,25 +11,61 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { EventContentStepList } from "./parts/EventContentStepList";
+import { EventFilter, ALL_EVENT_TYPES } from "./EventFilter";
+import type { EventTypeFilter } from "./types";
 
 interface EventChainProps {
 	events: Event[];
 }
 
 export function EventChain({ events }: EventChainProps) {
+	const [visibleEventTypes, setVisibleEventTypes] = useState<EventTypeFilter>(() => {
+		const defaultFilters: EventTypeFilter = {};
+		ALL_EVENT_TYPES.forEach((eventType) => {
+			defaultFilters[eventType] = true;
+		});
+		return defaultFilters;
+	});
+
+	useEffect(() => {
+		const savedFilters = localStorage.getItem('event-chain-filters');
+		if (savedFilters) {
+			try {
+				const parsedFilters = JSON.parse(savedFilters);
+				setVisibleEventTypes(parsedFilters);
+			} catch (error) {
+				console.warn('Failed to parse saved event filters:', error);
+			}
+		}
+	}, []);
+
+	useEffect(() => {
+		localStorage.setItem('event-chain-filters', JSON.stringify(visibleEventTypes));
+	}, [visibleEventTypes]);
+
 	const eventsSortedByTime = [...events].sort((a, b) => {
 		const aTs = Number(new Date((a.data as any)?.timestamp ?? 0));
 		const bTs = Number(new Date((b.data as any)?.timestamp ?? 0));
 		return aTs - bTs;
 	});
 
+	const filteredEvents = eventsSortedByTime.filter(event => 
+		visibleEventTypes[event.type] !== false
+	);
+
 	if (events.length === 0) {
 		return (
 			<Card className="h-full">
 				<CardHeader className="pb-4">
-					<CardTitle className="flex items-center gap-2 text-lg">
-						<BrainIcon className="h-5 w-5 text-primary" />
-						Event Chain
+					<CardTitle className="flex items-center justify-between text-lg">
+						<div className="flex items-center gap-2">
+							<BrainIcon className="h-5 w-5 text-primary" />
+							Event Chain
+						</div>
+						<EventFilter 
+							visibleEventTypes={visibleEventTypes}
+							onFilterChange={setVisibleEventTypes}
+						/>
 					</CardTitle>
 				</CardHeader>
 				<CardContent className="flex flex-1 items-center justify-center">
@@ -55,12 +92,24 @@ export function EventChain({ events }: EventChainProps) {
 
 	return (
 		<Card className="h-full">
+			<CardHeader className="pb-4">
+				<CardTitle className="flex items-center justify-between text-lg">
+					<div className="flex items-center gap-2">
+						<BrainIcon className="h-5 w-5 text-primary" />
+						Event Chain
+					</div>
+					<EventFilter 
+						visibleEventTypes={visibleEventTypes}
+						onFilterChange={setVisibleEventTypes}
+					/>
+				</CardTitle>
+			</CardHeader>
 			<CardContent className="min-h-0 flex-1 p-0">
 				<ScrollArea className="h-full px-6 pb-6">
 					<ChainOfThought defaultOpen={true}>
 						<ChainOfThoughtHeader>Event Chain</ChainOfThoughtHeader>
 						<ChainOfThoughtContent>
-							<EventContentStepList events={eventsSortedByTime} />
+							<EventContentStepList events={filteredEvents} />
 						</ChainOfThoughtContent>
 					</ChainOfThought>
 				</ScrollArea>

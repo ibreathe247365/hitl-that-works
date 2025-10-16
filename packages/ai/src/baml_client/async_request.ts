@@ -23,7 +23,7 @@ import type { BamlRuntime, BamlCtxManager, ClientRegistry, Image, Audio, Pdf, Vi
 import { toBamlError, HTTPRequest } from "@boundaryml/baml"
 import type { Checked, Check } from "./types"
 import type * as types from "./types"
-import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, IntentCreateTicket, NothingToDo} from "./types"
+import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, IntentCommentOnIssue, IntentCreateTicket, IntentLinkIssues, IntentSearchGitHub, IntentUpdateGitHubIssue, NothingToDo} from "./types"
 import type TypeBuilder from "./type_builder"
 
 type TickReason = "Unknown";

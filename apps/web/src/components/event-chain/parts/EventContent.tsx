@@ -9,10 +9,13 @@ import {
 	TaskTrigger,
 } from "@/components/ai-elements/task";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AIResponseContent } from "./events/AIResponse";
 import { AIStepContent } from "./events/AIStep";
 import { CalculateResultContent } from "./events/CalculateResult";
 import { ErrorEventContent } from "./events/Error";
+import { GitHubIssueResultContent } from "./events/GitHubIssueResult";
+import { GitHubSearchResultContent } from "./events/GitHubSearchResult";
 import { HumanContactSentContent } from "./events/HumanContactSent";
 import { HumanResponseContent } from "./events/HumanResponse";
 import {
@@ -30,7 +33,7 @@ import {
 	WebhookReceivedContent,
 } from "./events/WebhookEvents";
 import { WebhookProcessedContent } from "./events/WebhookProcessed";
-import { GitHubIssueResultContent } from "./events/GitHubIssueResult";
+import { GitHubTimeline } from "./GitHubTimeline";
 import {
 	getEventLabel,
 	getEventStatusBlinkClass,
@@ -75,13 +78,41 @@ export function EventContent({ event }: { event: Event }): ReactElement {
 			return <CalculateResultContent event={event} />;
 		case "function_result":
 			return <GitHubIssueResultContent event={event} />;
+		case "github_search_result":
+			return <GitHubSearchResultContent event={event} />;
+		case "search_github":
+		case "update_github_issue":
+		case "comment_on_issue":
+		case "link_issues":
+			return <GitHubTimeline events={[event]} />;
 		case "human_contact_sent":
 			return <HumanContactSentContent event={event} />;
 		default:
 			return (
-				<pre className="overflow-x-auto rounded-lg border bg-muted p-3 text-xs">
-					{JSON.stringify(event.data, null, 2)}
-				</pre>
+				<Card className="w-full">
+					<CardHeader className="pb-2">
+						<CardTitle className="flex items-center gap-2 text-sm">
+							<Badge variant="outline">Unknown Event</Badge>
+							<span className="text-muted-foreground">{event.type}</span>
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="pt-0">
+						<div className="space-y-2 text-sm">
+							{Object.entries(event.data || {}).map(([key, value]) => (
+								<div key={key}>
+									<span className="font-medium capitalize">
+										{key.replace(/_/g, " ")}:
+									</span>
+									<span className="ml-2 text-muted-foreground">
+										{typeof value === "object"
+											? JSON.stringify(value)
+											: String(value)}
+									</span>
+								</div>
+							))}
+						</div>
+					</CardContent>
+				</Card>
 			);
 	}
 }

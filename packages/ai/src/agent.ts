@@ -1,15 +1,20 @@
 import {
-    type Await,
-    b,
-    type ClarificationRequest,
-    type DoneForNow,
-    type NothingToDo,
-    type IntentCreateTicket,
+	type Await,
+	b,
+	type ClarificationRequest,
+	type DoneForNow,
+	type IntentCommentOnIssue,
+	type IntentCreateTicket,
+	type IntentLinkIssues,
+	type IntentSearchGitHub,
+	type IntentUpdateGitHubIssue,
+	type NothingToDo,
 } from "./baml_client";
-import { createHumanContact } from "./contact";
-import { createGitHubIssue } from "./tools/github";
-import { sendEmailFunctionApprovalRequest } from "./contact";
-import { sendSlackFunctionApprovalRequest } from "./contact";
+import {
+	createHumanContact,
+	sendEmailFunctionApprovalRequest,
+	sendSlackFunctionApprovalRequest,
+} from "./contact";
 import type {
 	Event,
 	FunctionCallCompleted,
@@ -19,37 +24,136 @@ import type {
 } from "./schemas";
 import { saveThreadState } from "./state";
 import { failOperation, startOperation, succeedOperation } from "./sync";
+import {
+	commentOnGitHubIssue,
+	createGitHubIssue,
+	linkGitHubIssues,
+	searchGitHubIssues,
+	updateGitHubIssue,
+} from "./tools/github";
 import { threadToPrompt } from "./utils";
 
-
-
 type CreateGitHubIssueKwargs = {
-    repo?: string;
-    title: string;
-    body: string;
-    labels?: string[];
+	title: string;
+	body: string;
+	labels?: string[];
 };
 
-type FunctionKwargs = CreateGitHubIssueKwargs;
+type SearchGitHubKwargs = {
+	query: string;
+	type: "issues" | "prs";
+	filters?: string[];
+};
+
+type UpdateGitHubIssueKwargs = {
+	issue_number: number;
+	title?: string;
+	body?: string;
+	labels?: string[];
+	state?: "open" | "closed" | null;
+};
+
+type CommentOnIssueKwargs = {
+	issue_number: number;
+	comment: string;
+};
+
+type LinkIssuesKwargs = {
+	source_issue: number;
+	target_issue: number;
+	relationship: string;
+};
+
+type FunctionKwargs =
+	| CreateGitHubIssueKwargs
+	| SearchGitHubKwargs
+	| UpdateGitHubIssueKwargs
+	| CommentOnIssueKwargs
+	| LinkIssuesKwargs;
 
 const functionHandlers: Record<
 	string,
 	(thread: Thread, kwargs: FunctionKwargs) => Promise<Thread>
 > = {
-    create_github_issue: async (thread, kwargs) => {
-        const { repo, title, body, labels } = kwargs as CreateGitHubIssueKwargs;
-        const issue = await createGitHubIssue({
-            repo: repo || "",
-            title,
-            body,
-            labels: labels ?? [],
-        });
-        thread.events.push({
-            type: "function_result",
-            data: { fn: "create_github_issue", issue },
-        });
-        return thread;
-    },
+	create_github_issue: async (thread, kwargs) => {
+		const { title, body, labels } = kwargs as CreateGitHubIssueKwargs;
+		const issue = await createGitHubIssue({
+			title,
+			body,
+			labels: labels ?? [],
+		});
+		thread.events.push({
+			type: "function_result",
+			data: { fn: "create_github_issue", issue },
+		});
+		return thread;
+	},
+	search_github: async (thread, kwargs) => {
+		const { query, type, filters } = kwargs as SearchGitHubKwargs;
+		const results = await searchGitHubIssues({
+			query,
+			type,
+			filters: filters ?? [],
+		});
+		thread.events.push({
+			type: "github_search_result",
+			data: {
+				query,
+				type,
+				results: results.results,
+				total_count: results.total_count,
+			},
+		});
+		return thread;
+	},
+	update_github_issue: async (thread, kwargs) => {
+		const { issue_number, title, body, labels, state } =
+			kwargs as UpdateGitHubIssueKwargs;
+		const result = await updateGitHubIssue({
+			issue_number,
+			title,
+			body,
+			labels,
+			state,
+		});
+		thread.events.push({
+			type: "function_result",
+			data: { fn: "update_github_issue", issue: result },
+		});
+		return thread;
+	},
+	comment_on_issue: async (thread, kwargs) => {
+		const { issue_number, comment } = kwargs as CommentOnIssueKwargs;
+		const result = await commentOnGitHubIssue({
+			issue_number,
+			comment,
+		});
+		thread.events.push({
+			type: "function_result",
+			data: { fn: "comment_on_issue", ...result },
+		});
+		return thread;
+	},
+	link_issues: async (thread, kwargs) => {
+		const { source_issue, target_issue, relationship } =
+			kwargs as LinkIssuesKwargs;
+		const result = await linkGitHubIssues({
+			source_issue,
+			target_issue,
+			relationship,
+		});
+		thread.events.push({
+			type: "function_result",
+			data: {
+				fn: "link_issues",
+				source_issue,
+				target_issue,
+				relationship,
+				...result,
+			},
+		});
+		return thread;
+	},
 };
 
 // Helper function to extract email address from thread
@@ -120,12 +224,16 @@ const appendResult = async (
 
 const _handleNextStep = async (
 	thread: Thread,
-    nextStep:
-        | ClarificationRequest
-        | DoneForNow
-        | NothingToDo
-        | Await
-        | IntentCreateTicket,
+	nextStep:
+		| ClarificationRequest
+		| DoneForNow
+		| NothingToDo
+		| Await
+		| IntentCreateTicket
+		| IntentSearchGitHub
+		| IntentUpdateGitHubIssue
+		| IntentCommentOnIssue
+		| IntentLinkIssues,
 	stateId?: string,
 ): Promise<Thread | false> => {
 	thread.events.push({
@@ -141,56 +249,261 @@ const _handleNextStep = async (
 	}
 	let currentStateId: string | null = null;
 	switch (nextStep.intent) {
-        case "create_ticket": {
-            const ticket = nextStep as IntentCreateTicket;
-            const title = ticket.title?.trim() || "New issue";
-            const body = ticket.body?.trim() || "No description provided.";
-            const labels = ticket.labels || [];
-            const repo = process.env.GITHUB_REPO || "";
-            const approverEmail = "delivered@resend.dev";
+		case "search_github": {
+			const searchIntent = nextStep as IntentSearchGitHub;
+			const query = searchIntent.query?.trim() || "";
+			const type = searchIntent.type || "issues";
+			const filters = searchIntent.filters || [];
 
-            currentStateId = await saveThreadState(
-                thread,
-                undefined,
-                undefined,
-                stateId,
-            );
+			thread.events.push({
+				type: "function_call",
+				data: { fn: "search_github", kwargs: { query, type, filters } },
+			});
 
-            thread.events.push({
-                type: "function_call",
-                data: { fn: "create_github_issue", kwargs: { repo, title, body, labels } },
-            });
+			const handler = functionHandlers["search_github"];
+			if (handler) {
+				const updatedThread = await handler(thread, { query, type, filters });
+				if (stateId && aiStepOp) {
+					succeedOperation(stateId, "ai_step", aiStepOp, {
+						result: { message: "GitHub search completed" },
+					});
+				}
+				return updatedThread;
+			}
 
-            await sendSlackFunctionApprovalRequest(
-                `Approve creating a GitHub issue?\n\nTitle: ${title}\n\nLabels: ${labels.join(", ") || "(none)"}`,
-                { slack: { channel_id: "webhook" } },
-                currentStateId || "",
-                "create_github_issue",
-                { repo, title, body, labels },
-            );
+			thread.events.push({
+				type: "error",
+				data: "Failed to execute GitHub search",
+			});
+			return false;
+		}
+		case "create_ticket": {
+			const ticket = nextStep as IntentCreateTicket;
+			const title = ticket.title?.trim() || "New issue";
+			const body = ticket.body?.trim() || "No description provided.";
+			const labels = ticket.labels || [];
+			const repo = process.env.GITHUB_REPO || "";
+			const approverEmail = "delivered@resend.dev";
 
-            if (approverEmail) {
-                await sendEmailFunctionApprovalRequest(
-                    "Approve creating a GitHub issue?",
-                    { email: { address: approverEmail, subject: "Approval needed: GitHub issue" } },
-                    currentStateId || "",
-                    "create_github_issue",
-                    { repo, title, body, labels },
-                );
-            }
+			currentStateId = await saveThreadState(
+				thread,
+				undefined,
+				undefined,
+				stateId,
+			);
 
-            thread.events.push({
-                type: "human_contact_sent",
-                data: { message: "Approval links sent", timestamp: Date.now() },
-            });
+			thread.events.push({
+				type: "function_call",
+				data: {
+					fn: "create_github_issue",
+					kwargs: { repo, title, body, labels },
+				},
+			});
 
-            if (stateId && aiStepOp) {
-                succeedOperation(stateId, "ai_step", aiStepOp, {
-                    result: { message: "Awaiting approval for GitHub issue creation" },
-                });
-            }
-            return false;
-        }
+			await sendSlackFunctionApprovalRequest(
+				`Approve creating a GitHub issue?\n\nTitle: ${title}\n\nLabels: ${labels.join(", ") || "(none)"}`,
+				{ slack: { channel_id: "webhook" } },
+				currentStateId || "",
+				"create_github_issue",
+				{ repo, title, body, labels },
+			);
+
+			if (approverEmail) {
+				await sendEmailFunctionApprovalRequest(
+					"Approve creating a GitHub issue?",
+					{
+						email: {
+							address: approverEmail,
+							subject: "Approval needed: GitHub issue",
+						},
+					},
+					currentStateId || "",
+					"create_github_issue",
+					{ repo, title, body, labels },
+				);
+			}
+
+			thread.events.push({
+				type: "human_contact_sent",
+				data: { message: "Approval links sent", timestamp: Date.now() },
+			});
+
+			if (stateId && aiStepOp) {
+				succeedOperation(stateId, "ai_step", aiStepOp, {
+					result: { message: "Awaiting approval for GitHub issue creation" },
+				});
+			}
+			return false;
+		}
+		case "update_github_issue": {
+			const updateIntent = nextStep as IntentUpdateGitHubIssue;
+			const issue_number = updateIntent.issue_number;
+			const title = updateIntent.title?.trim();
+			const body = updateIntent.body?.trim();
+			const labels = updateIntent.labels || [];
+			const state = updateIntent.state;
+			const approverEmail = "delivered@resend.dev";
+
+			currentStateId = await saveThreadState(
+				thread,
+				undefined,
+				undefined,
+				stateId,
+			);
+
+			thread.events.push({
+				type: "function_call",
+				data: {
+					fn: "update_github_issue",
+					kwargs: { issue_number, title, body, labels, state },
+				},
+			});
+
+			await sendSlackFunctionApprovalRequest(
+				`Approve updating GitHub issue #${issue_number}?\n\nTitle: ${title || "(no change)"}\n\nLabels: ${labels.join(", ") || "(no change)"}\n\nState: ${state || "(no change)"}`,
+				{ slack: { channel_id: "webhook" } },
+				currentStateId || "",
+				"update_github_issue",
+				{ issue_number, title, body, labels, state },
+			);
+
+			if (approverEmail) {
+				await sendEmailFunctionApprovalRequest(
+					"Approve updating GitHub issue?",
+					{
+						email: {
+							address: approverEmail,
+							subject: "Approval needed: GitHub issue update",
+						},
+					},
+					currentStateId || "",
+					"update_github_issue",
+					{ issue_number, title, body, labels, state },
+				);
+			}
+
+			thread.events.push({
+				type: "human_contact_sent",
+				data: { message: "Approval links sent", timestamp: Date.now() },
+			});
+
+			if (stateId && aiStepOp) {
+				succeedOperation(stateId, "ai_step", aiStepOp, {
+					result: { message: "Awaiting approval for GitHub issue update" },
+				});
+			}
+			return false;
+		}
+		case "comment_on_issue": {
+			const commentIntent = nextStep as IntentCommentOnIssue;
+			const issue_number = commentIntent.issue_number;
+			const comment = commentIntent.comment?.trim() || "";
+			const approverEmail = "delivered@resend.dev";
+
+			currentStateId = await saveThreadState(
+				thread,
+				undefined,
+				undefined,
+				stateId,
+			);
+
+			thread.events.push({
+				type: "function_call",
+				data: { fn: "comment_on_issue", kwargs: { issue_number, comment } },
+			});
+
+			await sendSlackFunctionApprovalRequest(
+				`Approve commenting on GitHub issue #${issue_number}?\n\nComment: ${comment}`,
+				{ slack: { channel_id: "webhook" } },
+				currentStateId || "",
+				"comment_on_issue",
+				{ issue_number, comment },
+			);
+
+			if (approverEmail) {
+				await sendEmailFunctionApprovalRequest(
+					"Approve commenting on GitHub issue?",
+					{
+						email: {
+							address: approverEmail,
+							subject: "Approval needed: GitHub issue comment",
+						},
+					},
+					currentStateId || "",
+					"comment_on_issue",
+					{ issue_number, comment },
+				);
+			}
+
+			thread.events.push({
+				type: "human_contact_sent",
+				data: { message: "Approval links sent", timestamp: Date.now() },
+			});
+
+			if (stateId && aiStepOp) {
+				succeedOperation(stateId, "ai_step", aiStepOp, {
+					result: { message: "Awaiting approval for GitHub issue comment" },
+				});
+			}
+			return false;
+		}
+		case "link_issues": {
+			const linkIntent = nextStep as IntentLinkIssues;
+			const source_issue = linkIntent.source_issue;
+			const target_issue = linkIntent.target_issue;
+			const relationship = linkIntent.relationship;
+			const approverEmail = "delivered@resend.dev";
+
+			currentStateId = await saveThreadState(
+				thread,
+				undefined,
+				undefined,
+				stateId,
+			);
+
+			thread.events.push({
+				type: "function_call",
+				data: {
+					fn: "link_issues",
+					kwargs: { source_issue, target_issue, relationship },
+				},
+			});
+
+			await sendSlackFunctionApprovalRequest(
+				`Approve linking GitHub issues #${source_issue} and #${target_issue}?\n\nRelationship: ${relationship}`,
+				{ slack: { channel_id: "webhook" } },
+				currentStateId || "",
+				"link_issues",
+				{ source_issue, target_issue, relationship },
+			);
+
+			if (approverEmail) {
+				await sendEmailFunctionApprovalRequest(
+					"Approve linking GitHub issues?",
+					{
+						email: {
+							address: approverEmail,
+							subject: "Approval needed: GitHub issue linking",
+						},
+					},
+					currentStateId || "",
+					"link_issues",
+					{ source_issue, target_issue, relationship },
+				);
+			}
+
+			thread.events.push({
+				type: "human_contact_sent",
+				data: { message: "Approval links sent", timestamp: Date.now() },
+			});
+
+			if (stateId && aiStepOp) {
+				succeedOperation(stateId, "ai_step", aiStepOp, {
+					result: { message: "Awaiting approval for GitHub issue linking" },
+				});
+			}
+			return false;
+		}
 		case "done_for_now": {
 			currentStateId = await saveThreadState(
 				thread,
@@ -299,15 +612,15 @@ const _handleNextStep = async (
 
 			return false;
 
-        case "await":
-            return await appendResult(thread, async () => {
-                await new Promise((resolve) =>
-                    setTimeout(resolve, nextStep.seconds * 1000),
-                );
-                return {
-                    status: `successfully waited ${nextStep.seconds} seconds`,
-                };
-            });
+		case "await":
+			return await appendResult(thread, async () => {
+				await new Promise((resolve) =>
+					setTimeout(resolve, nextStep.seconds * 1000),
+				);
+				return {
+					status: `successfully waited ${nextStep.seconds} seconds`,
+				};
+			});
 
 		default: {
 			const errorMessage = `you called a tool that is not implemented: ${(nextStep as any).intent}, something is wrong with your internal programming, please get help from a human`;

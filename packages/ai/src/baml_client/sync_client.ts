@@ -22,7 +22,7 @@ import type { BamlRuntime, FunctionResult, BamlCtxManager, Image, Audio, Pdf, Vi
 import { toBamlError, BamlAbortError, type HTTPRequest } from "@boundaryml/baml"
 import type { Checked, Check, RecursivePartialNull as MovedRecursivePartialNull } from "./types"
 import type * as types from "./types"
-import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, IntentCreateTicket, NothingToDo} from "./types"
+import type {Await, Calculation, ClarificationRequest, DoneForNow, IntentCalculate, IntentCommentOnIssue, IntentCreateTicket, IntentLinkIssues, IntentSearchGitHub, IntentUpdateGitHubIssue, NothingToDo} from "./types"
 import type TypeBuilder from "./type_builder"
 import { HttpRequest, HttpStreamRequest } from "./sync_request"
 import { LlmResponseParser, LlmStreamParser } from "./parser"
@@ -97,7 +97,7 @@ export class BamlSyncClient {
   DetermineNextStep(
       thread: string,
       __baml_options__?: BamlCallOptions
-  ): types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket {
+  ): types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues {
     try {
       const options = { ...this.bamlOptions, ...(__baml_options__ || {}) }
       const signal = options.signal;
@@ -129,7 +129,7 @@ export class BamlSyncClient {
         env,
         signal,
       )
-      return raw.parsed(false) as types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket
+      return raw.parsed(false) as types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues
     } catch (error: any) {
       throw toBamlError(error);
     }

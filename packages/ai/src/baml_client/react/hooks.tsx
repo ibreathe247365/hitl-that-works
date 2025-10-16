@@ -356,9 +356,9 @@ function useBamlAction<FunctionName extends FunctionNames>(
  *
  *
  * **Return Type:**
- * - **Non‑streaming:** types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket
- * - **Streaming Partial:** ClarificationRequest | DoneForNow | NothingToDo | Await | IntentCreateTicket
- * - **Streaming Final:** types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket
+ * - **Non‑streaming:** types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues
+ * - **Streaming Partial:** ClarificationRequest | DoneForNow | NothingToDo | Await | IntentCreateTicket | IntentSearchGitHub | IntentUpdateGitHubIssue | IntentCommentOnIssue | IntentLinkIssues
+ * - **Streaming Final:** types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues
  *
  * **Usage Patterns:**
  * 1. **Non‑streaming (Default)**

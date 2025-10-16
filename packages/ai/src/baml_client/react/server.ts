@@ -24,7 +24,7 @@ import { b } from '../index';
 import type { Check, Checked  } from "../types";
 import type { Image, Audio, Pdf, Video } from "@boundaryml/baml";
 
-import type {  Await,  Calculation,  ClarificationRequest,  DoneForNow,  IntentCalculate,  IntentCreateTicket,  NothingToDo } from "../types"
+import type {  Await,  Calculation,  ClarificationRequest,  DoneForNow,  IntentCalculate,  IntentCommentOnIssue,  IntentCreateTicket,  IntentLinkIssues,  IntentSearchGitHub,  IntentUpdateGitHubIssue,  NothingToDo } from "../types"
 
 import type * as types from "../types"
 
@@ -40,11 +40,11 @@ import type * as types from "../types"
  *
  * @param { string } thread - Input parameter.
  *
- * @returns {Promise<types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket>} A promise that resolves with the result of the action.
+ * @returns {Promise<types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues>} A promise that resolves with the result of the action.
  */
 export const DetermineNextStep = async (
   thread: string,
-): Promise<types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket> => {
+): Promise<types.ClarificationRequest | types.DoneForNow | types.NothingToDo | types.Await | types.IntentCreateTicket | types.IntentSearchGitHub | types.IntentUpdateGitHubIssue | types.IntentCommentOnIssue | types.IntentLinkIssues> => {
   return b.DetermineNextStep(
     thread,
   );

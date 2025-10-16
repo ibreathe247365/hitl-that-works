@@ -1,7 +1,7 @@
+import { sendEmailFunctionApprovalRequest } from "@hitl/ai";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createErrorResponse, createSuccessResponse } from "@/lib/webhook";
-import { sendEmailFunctionApprovalRequest } from "@hitl/ai";
 
 export async function POST(request: NextRequest) {
 	try {
@@ -9,7 +9,11 @@ export async function POST(request: NextRequest) {
 		const { stateId, fn, kwargs, subject, message } = body ?? {};
 
 		if (!process.env.RESEND_API_KEY) {
-			return createErrorResponse("RESEND_API_KEY is not set", "config_error", 500);
+			return createErrorResponse(
+				"RESEND_API_KEY is not set",
+				"config_error",
+				500,
+			);
 		}
 
 		const result = await sendEmailFunctionApprovalRequest(
@@ -21,10 +25,16 @@ export async function POST(request: NextRequest) {
 		);
 
 		if (!result.success) {
-			return createErrorResponse(result.error || "Failed to send email", "resend_error", 500);
+			return createErrorResponse(
+				result.error || "Failed to send email",
+				"resend_error",
+				500,
+			);
 		}
 
-		return createSuccessResponse("Approval email sent", { id: result.messageId });
+		return createSuccessResponse("Approval email sent", {
+			id: result.messageId,
+		});
 	} catch (error) {
 		return NextResponse.json(
 			{

@@ -9,10 +9,12 @@ import {
 	TaskTrigger,
 } from "@/components/ai-elements/task";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AIResponseStep } from "./events/AIResponse";
 import { AIStepStep } from "./events/AIStep";
 import { CalculateResultStep } from "./events/CalculateResult";
 import { ErrorEventStep } from "./events/Error";
+import { GitHubSearchResultStep } from "./events/GitHubSearchResult";
 import { HumanContactSentStep } from "./events/HumanContactSent";
 import { HumanResponseStep } from "./events/HumanResponse";
 import {
@@ -30,6 +32,7 @@ import {
 	WebhookReceivedStep,
 } from "./events/WebhookEvents";
 import { WebhookProcessedStep } from "./events/WebhookProcessed";
+import { GitHubTimeline } from "./GitHubTimeline";
 import { getEventStatusBlinkClass, getEventStatusColor } from "./utils";
 
 export function EventContentStepList({
@@ -77,6 +80,13 @@ export function EventContentStepList({
 						return <NothingToDoIntentStep key={index} event={currentEvent} />;
 					case "calculate_result":
 						return <CalculateResultStep key={index} event={currentEvent} />;
+					case "github_search_result":
+						return <GitHubSearchResultStep key={index} event={currentEvent} />;
+					case "search_github":
+					case "update_github_issue":
+					case "comment_on_issue":
+					case "link_issues":
+						return <GitHubTimeline key={index} events={[currentEvent]} />;
 					case "human_contact_sent":
 						return <HumanContactSentStep key={index} event={currentEvent} />;
 					default:
@@ -100,9 +110,34 @@ export function EventContentStepList({
 								</TaskTrigger>
 								<TaskContent>
 									<TaskItem>
-										<pre className="overflow-x-auto rounded-lg border bg-muted p-3 text-xs">
-											{JSON.stringify(currentEvent.data, null, 2)}
-										</pre>
+										<Card className="w-full">
+											<CardHeader className="pb-2">
+												<CardTitle className="flex items-center gap-2 text-sm">
+													<Badge variant="outline">Unknown Event</Badge>
+													<span className="text-muted-foreground">
+														{currentEvent.type}
+													</span>
+												</CardTitle>
+											</CardHeader>
+											<CardContent className="pt-0">
+												<div className="space-y-2 text-sm">
+													{Object.entries(currentEvent.data || {}).map(
+														([key, value]) => (
+															<div key={key}>
+																<span className="font-medium capitalize">
+																	{key.replace(/_/g, " ")}:
+																</span>
+																<span className="ml-2 text-muted-foreground">
+																	{typeof value === "object"
+																		? JSON.stringify(value)
+																		: String(value)}
+																</span>
+															</div>
+														),
+													)}
+												</div>
+											</CardContent>
+										</Card>
 									</TaskItem>
 								</TaskContent>
 							</Task>

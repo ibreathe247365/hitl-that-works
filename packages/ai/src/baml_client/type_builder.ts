@@ -37,7 +37,15 @@ export default class TypeBuilder {
     
     IntentCalculate: ClassViewer<'IntentCalculate', "intent" | "expression" | "explanation">;
     
+    IntentCommentOnIssue: ClassViewer<'IntentCommentOnIssue', "intent" | "issue_number" | "comment">;
+    
     IntentCreateTicket: ClassViewer<'IntentCreateTicket', "intent" | "title" | "body" | "labels">;
+    
+    IntentLinkIssues: ClassViewer<'IntentLinkIssues', "intent" | "source_issue" | "target_issue" | "relationship">;
+    
+    IntentSearchGitHub: ClassViewer<'IntentSearchGitHub', "intent" | "query" | "type" | "filters">;
+    
+    IntentUpdateGitHubIssue: ClassViewer<'IntentUpdateGitHubIssue', "intent" | "issue_number" | "title" | "body" | "labels" | "state">;
     
     NothingToDo: ClassViewer<'NothingToDo', "intent" | "message">;
     
@@ -46,7 +54,7 @@ export default class TypeBuilder {
     constructor() {
         this.tb = new _TypeBuilder({
           classes: new Set([
-            "Await","Calculation","ClarificationRequest","DoneForNow","IntentCalculate","IntentCreateTicket","NothingToDo",
+            "Await","Calculation","ClarificationRequest","DoneForNow","IntentCalculate","IntentCommentOnIssue","IntentCreateTicket","IntentLinkIssues","IntentSearchGitHub","IntentUpdateGitHubIssue","NothingToDo",
           ]),
           enums: new Set([
             
@@ -74,8 +82,24 @@ export default class TypeBuilder {
           "intent","expression","explanation",
         ]);
         
+        this.IntentCommentOnIssue = this.tb.classViewer("IntentCommentOnIssue", [
+          "intent","issue_number","comment",
+        ]);
+        
         this.IntentCreateTicket = this.tb.classViewer("IntentCreateTicket", [
           "intent","title","body","labels",
+        ]);
+        
+        this.IntentLinkIssues = this.tb.classViewer("IntentLinkIssues", [
+          "intent","source_issue","target_issue","relationship",
+        ]);
+        
+        this.IntentSearchGitHub = this.tb.classViewer("IntentSearchGitHub", [
+          "intent","query","type","filters",
+        ]);
+        
+        this.IntentUpdateGitHubIssue = this.tb.classViewer("IntentUpdateGitHubIssue", [
+          "intent","issue_number","title","body","labels","state",
         ]);
         
         this.NothingToDo = this.tb.classViewer("NothingToDo", [

@@ -11,7 +11,12 @@ import type {
 } from "./types";
 
 // Re-export channel-specific functions
-export { createEmailWebhookPayload, sendEmail } from "./channels/email";
+// Email approvals export
+export {
+	createEmailWebhookPayload,
+	sendEmail,
+	sendEmailFunctionApprovalRequest,
+} from "./channels/email";
 export {
 	createSlackWebhookPayload,
 	sendSlack,
@@ -21,9 +26,6 @@ export { sendWebhook } from "./channels/webhook";
 export * from "./schemas";
 // Re-export all types and schemas
 export * from "./types";
-
-// Email approvals export
-export { sendEmailFunctionApprovalRequest } from "./channels/email";
 
 /**
  * Send a message via one or more contact channels
